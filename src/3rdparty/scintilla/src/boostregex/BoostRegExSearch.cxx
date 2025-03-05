@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <memory>
+#include <map>
 #include <string_view>
 #include <stdexcept>
 #include <optional>
@@ -168,6 +169,7 @@ private:
 		virtual void NotifyStyleNeeded(Document* /*document*/, void* /*userData*/, Sci::Position /*endPos*/) {}
 		virtual void NotifyLexerChanged(Document* /*document*/, void* /*userData*/) {}
 		virtual void NotifyErrorOccurred(Document* /*document*/, void* /*userData*/, Scintilla::Status /*status*/) {}
+		virtual void NotifyGroupCompleted(Document* /*document*/, void* /*userData*/) noexcept {}
 		
 		Document* _document;
 		bool _documentModified;
