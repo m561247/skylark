@@ -226,23 +226,20 @@ on_config_load_file(void *lp)
         int last_id = -1;
         for (size_t i = 0; i < vec_size; ++i)
         {
-            if (narg)
+            if (vbak[i].tab_id >= 0)
             {
-                if (vbak[i].tab_id >= 0)
+                last_id = vbak[i].tab_id;
+                if (vbak[i].focus)
                 {
-                    last_id = vbak[i].tab_id;
-                    if (vbak[i].focus)
-                    {
-                        vbak[i].focus = 0;    
-                    }
+                    vbak[i].focus = 0;    
                 }
-                else
+            }
+            else
+            {
+                vbak[i].tab_id = last_id >= 0 ? (++last_id) : (last_id = 0);
+                if (i == vec_size - 1)
                 {
-                    vbak[i].tab_id = last_id >= 0 ? (++last_id) : (last_id = 0);
-                    if (i == vec_size - 1)
-                    {
-                        vbak[i].focus = 1;
-                    }
+                    vbak[i].focus = 1;
                 }
             }
         }

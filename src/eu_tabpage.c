@@ -1759,7 +1759,7 @@ on_tabpage_count_tabs(int *pv0, int *pv1)
     HWND hmain = HMAIN_GET;
     if (pv0)
     {
-        *pv0 = hmain ? TabCtrl_GetItemCount(hmain) : 0;    
+        *pv0 = hmain ? TabCtrl_GetItemCount(hmain) : 0;
     }
     if (pv1)
     {
