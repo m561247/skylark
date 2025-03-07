@@ -228,8 +228,8 @@ on_file_update_recent_menu(void)
     if (hroot)
     {
         HMENU hre = NULL;
-        HMENU hfile = GetSubMenu(hroot, 0);
-        hre = hfile ? GetSubMenu(hfile, 2) : NULL;
+        HMENU hfile = GetSubMenu(hroot, FILES_MENU);
+        hre = hfile ? GetSubMenu(hfile, FT_MENU_RECENT_SUB) : NULL;
         if (hre)
         {
             int count = GetMenuItemCount(hre);
