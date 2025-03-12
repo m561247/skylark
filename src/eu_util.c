@@ -211,23 +211,22 @@ util_lock_v2(eu_tabpage *p)
                 MSG msg = {0};
                 DWORD result = 0;
                 HANDLE wait_handle = (HANDLE)_beginthreadex(NULL, 0, util_lock_callback, p, 0, NULL);
-                while (wait_handle)
+                if (wait_handle)
                 {
-                    result = MsgWaitForMultipleObjects(1, &wait_handle, FALSE, INFINITE, QS_ALLINPUT);
-                    if (result != (WAIT_OBJECT_0))
+                    while ((result = MsgWaitForMultipleObjects(1, &wait_handle, FALSE, INFINITE, QS_ALLINPUT)) == WAIT_OBJECT_0 + 1)
                     {
-                        break;
+                        eu_logmsg("Have a message, peek and dispatch it\n");
+                        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+                        {
+                            TranslateMessage(&msg);
+                            DispatchMessage(&msg);
+                        }
                     }
-                    else
-                    {
-                        PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-                        TranslateMessage(&msg);
-                        DispatchMessage(&msg);
-                    }
+                    CloseHandle(wait_handle);
                 }
             }
         }
-        else 
+        else
         {
             util_lock(&p->busy_id);
         }
