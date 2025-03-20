@@ -156,7 +156,7 @@ typedef unsigned long long XML_Size;
 #else
 typedef long XML_Index;
 typedef unsigned long XML_Size;
-#endif /* _M_X64 */
+#endif /* XML_LARGE_SIZE */
 
 #ifdef __cplusplus
 }
