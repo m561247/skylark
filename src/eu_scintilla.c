@@ -99,7 +99,7 @@ on_sci_set_margin(eu_tabpage *pnode)
 }
 
 void
-on_sci_default_fonts(eu_tabpage *pnode, const uint32_t bgcolor)
+on_sci_default_fonts(eu_tabpage *pnode, const uint32_t bg)
 {
     if (pnode)
     {
@@ -107,7 +107,7 @@ on_sci_default_fonts(eu_tabpage *pnode, const uint32_t bgcolor)
         eu_sci_call(pnode, SCI_STYLESETFONT, STYLE_DEFAULT, eu_doc_get_font_name(pnode));
         eu_sci_call(pnode, SCI_STYLESETSIZE, STYLE_DEFAULT, eu_doc_get_font_size(pnode));
         eu_sci_call(pnode, SCI_STYLESETFORE, STYLE_DEFAULT, eu_get_theme()->item.text.color);
-        eu_sci_call(pnode, SCI_STYLESETBACK, STYLE_DEFAULT, bgcolor != (uint32_t)-1 ? bgcolor : eu_get_theme()->item.text.bgcolor);
+        eu_sci_call(pnode, SCI_STYLESETBACK, STYLE_DEFAULT, bg != DEFAULTBACK && bg != DEFAULTSPACE ? bg : eu_get_theme()->item.text.bgcolor);
         eu_sci_call(pnode, SCI_STYLESETBOLD, STYLE_DEFAULT, eu_get_theme()->item.text.bold);
         eu_sci_call(pnode, SCI_STYLECLEARALL, 0, 0);
         // 设置字体抗锯齿
