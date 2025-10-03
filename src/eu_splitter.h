@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@ extern HWND g_splitter_tabbar;
 extern HWND g_splitter_editbar;
 extern HWND g_splitter_tablebar;
 extern HWND g_splitter_minmap;
-extern HWND g_splitter_symbar2;
 extern HWND g_splitter_editbar2;
 extern HWND g_splitter_tablebar2;
 
@@ -40,7 +39,6 @@ bool on_splitter_init_tabbar(HWND parent);
 bool on_splitter_init_editbar(HWND parent);
 bool on_splitter_init_tablebar(HWND parent);
 bool on_splitter_init_minmap(HWND parent);
-bool on_splitter_symbar_slave(HWND parent);
 bool on_splitter_editbar_slave(HWND parent);
 bool on_splitter_tablebar_slave(HWND parent);
 void on_splitter_redraw(void);

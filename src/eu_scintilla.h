@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #define DEFAULTSPACE ((uint32_t)(-2))
 #define MARGIN_BOOKMARK_VALUE   0x9
 #define MARGIN_BOOKMARK_MASKN   (~SC_MASK_FOLDERS & ~MARGIN_HISTORY_MASKN)
+#define SCI_CODE_HINT 0x1000
 
 #ifdef __cplusplus
 extern "C"
@@ -59,13 +60,17 @@ void on_sci_free_tab(eu_tabpage **ppnod);
 void on_sci_insert_egg(eu_tabpage *pnode);
 void on_sci_refresh_ui(eu_tabpage *pnode);
 void on_sic_mousewheel(eu_tabpage *pnode, WPARAM wParam, LPARAM lParam);
+void on_sci_update_filesize(eu_tabpage *pnode);
+void on_sci_wrap_mode(const eu_tabpage *p);
+void on_sci_caret_scroll(const eu_tabpage *p);
 bool on_sci_doc_modified(eu_tabpage *pnode);
 bool on_sci_line_text(eu_tabpage *pnode, size_t lineno, char *buf, size_t len);
 bool on_sci_view_sync(void);
-void on_sci_scroll(eu_tabpage *p);
+void on_sci_scroll_sync(eu_tabpage *p);
 void on_sci_destroy_control(eu_tabpage *pnode);
-char *on_sci_range_text(eu_tabpage *pnode, sptr_t start, sptr_t end);
+char *on_sci_range_text(const eu_tabpage *pnode, sptr_t start, sptr_t end);
 const int on_sci_bitmask_get(const uint32_t pos, const uint32_t len);
+sptr_t on_sci_call(const eu_tabpage *p, const int m, const sptr_t w, const sptr_t l);
 
 #ifdef __cplusplus
 }

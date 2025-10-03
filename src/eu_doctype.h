@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,7 +86,11 @@ enum dctype
     DOCTYPE_PASCAL = 42,
     DOCTYPE_TCL = 43,
     DOCTYPE_INNO = 44,
-    DOCTYPE_NSIS = 45
+    DOCTYPE_NSIS = 45,
+    DOCTYPE_BATCH = 46,
+    DOCTYPE_POWERSHELL = 47,
+    DOCTYPE_TOML = 48,
+    DOCTYPE_ZIG = 49
 };
 
 typedef struct _doc_styles

@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #define FONT_DEFAULT_SIZE (-12)
 
 static HFONT g_hfont;
+static HWND  hwnd_edit_tips;
 static HBRUSH brush_linenumber;
 static HBRUSH brush_foldmargin;
 static HBRUSH brush_text;
@@ -139,9 +140,9 @@ static HFONT font_dochistory_static2;
 
 static theme_query pm_query[] =
 {
-    {IDS_THEME_DESC_DEFAULT, {0}, _T("default")} ,
-    {IDS_THEME_DESC_BLOCK  , {0}, _T("black")}   ,
-    {IDS_THEME_DESC_WHITE  , {0}, _T("white")}   ,
+    {IDS_THEME_DESC_DEFAULT, {0}, _T("default")},
+    {IDS_THEME_DESC_BLOCK  , {0}, _T("black")}  ,
+    {IDS_THEME_DESC_WHITE  , {0}, _T("white")}  ,
     {0, {0}, {0}}
 };
 
@@ -303,7 +304,7 @@ on_theme_update_font(const control_id id)
             }
             if (HSLAVE_SHOW && (htab = HSLAVE_GET))
             {
-                SendMessage(htab, WM_SETFONT, (WPARAM)g_hfont, 0);    
+                SendMessage(htab, WM_SETFONT, (WPARAM)g_hfont, 0);
             }
             break;     
         case filebar_id:
@@ -388,7 +389,7 @@ on_theme_copy_style(TCHAR *ac_theme)
     }
     if (on_theme_load_script(ac_theme))
     {
-        eu_logmsg("%s: on_theme_load_script return false\n", __FUNCTION__);
+        eu_logmsg("Theme: %s, on_theme_load_script return false\n", __FUNCTION__);
         return EUE_LOAD_SCRIPT_ERR;
     }
     strncpy(eu_get_config()->window_theme, eu_get_theme()->name, QW_SIZE - 1);
@@ -708,10 +709,10 @@ theme_release_handle(void)
 static void
 theme_show_balloon_tip(const HWND hdlg, const int resid)
 {
+    TCHAR ptxt[MAX_PATH] = {0};
     HWND hwnd_edit = GetDlgItem(hdlg, resid);
     if (hwnd_edit)
     {
-        TCHAR ptxt[MAX_PATH] = {0};
         if (resid == IDC_THEME_CARET_EDT)
         {
             eu_i18n_load_str(IDS_THEME_CARET_TIPS, ptxt, MAX_PATH);
@@ -720,7 +721,19 @@ theme_show_balloon_tip(const HWND hdlg, const int resid)
         {
             eu_i18n_load_str(IDS_THEME_EDIT_TIPS, ptxt, MAX_PATH);
         }
-        util_create_tips(hwnd_edit, ptxt, NULL);
+        if (hwnd_edit_tips)
+        {
+            DestroyWindow(hwnd_edit_tips);
+            hwnd_edit_tips = NULL;
+        }
+        if (!hwnd_edit_tips)
+        {
+            hwnd_edit_tips = util_create_tips(hwnd_edit, hdlg, ptxt);
+            if (hwnd_edit_tips && on_dark_enable())
+            {
+                on_dark_set_theme(hwnd_edit_tips, DARKMODE, NULL);
+            }
+        }
     }
 }
 
@@ -1253,6 +1266,11 @@ theme_proc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
             else STYLE_MSG(symbolic,hwnd_symbolic_static,font_symbolic_static,IDC_SETFONT_SYMBOLIC_BTN,IDC_SETTEXTCOLOR_SYMBOLIC_BTN)
             break;
         case WM_DESTROY:
+            if (hwnd_edit_tips)
+            {
+                DestroyWindow(hwnd_edit_tips);
+                hwnd_edit_tips = NULL;
+            }
             theme_release_handle();
             break;
         default:

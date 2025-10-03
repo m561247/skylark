@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,13 +109,13 @@ on_remote_init_socket(const char *url, remotefs *pserver)
     }
     if (!(curl = eu_curl_easy_init()))
     {
-        eu_logmsg("eu_curl_easy_init failed!\n");
+        eu_logmsg("Remotefs: eu_curl_easy_init failed!\n");
         return NULL;
     }
     // 加入url编码, 防止路径上出现空格等字符
     if (!(enc_url = util_url_escape(url)))
     {
-        eu_logmsg("util_url_escape failed!\n");
+        eu_logmsg("Remotefs: util_url_escape failed!\n");
         eu_curl_easy_cleanup(curl);
         return NULL;
     }
@@ -130,7 +130,7 @@ on_remote_init_socket(const char *url, remotefs *pserver)
     }
     else
     {   // 客户端证书私钥，用于双向认证
-        eu_logmsg("we user pkey login\n");
+        eu_logmsg("Remotefs: we user pkey login\n");
         eu_curl_easy_setopt(curl, CURLOPT_USERNAME, pserver->user);
         eu_curl_easy_setopt(curl, CURLOPT_SSH_PRIVATE_KEYFILE, pserver->key_path);
         if (strlen(pserver->passphrase) > 0)
@@ -647,12 +647,12 @@ remotefs_proc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 static int
 on_remote_parser_callback(void *data, int count, char **column, char **names)
 {
-    remotefs *pserver = NULL;
     if ((int *)data)
     {
         *(int *)data = 0;
     }
-    if (!(pserver = (remotefs *) calloc(1, sizeof(remotefs))))
+    remotefs *pserver = (remotefs *) calloc(1, sizeof(remotefs));
+    if (!pserver)
     {
         return 1;
     }
@@ -721,7 +721,7 @@ on_remote_list_find(const TCHAR *url)
             return NULL;
         }
     }
-    eu_logmsg("addr = %s, port = %s\n", addr, port);
+    eu_logmsg("Remotefs: addr = %s, port = %s\n", addr, port);
     if (list_empty(&list_server))
     {
         on_sql_post("SELECT * FROM file_remote;", on_remote_parser_callback, NULL);
@@ -757,13 +757,17 @@ eu_remote_list_release(void)
     }
 }
 
-bool
-on_remote_list_init(void)
+unsigned __stdcall
+on_remote_load_config(void *lp)
 {
     int load_code = 1;
     const char *sql = "SELECT * FROM file_remote;";
-    int err = on_sql_post(sql, on_remote_parser_callback, &load_code);
-    return (err == SQLITE_OK && load_code == 0);
+    int err = eu_sqlite3_send(sql, on_remote_parser_callback, &load_code);
+    if (err == SQLITE_OK && load_code == 0)
+    {
+        PostMessage(g_filetree, TVI_LOADREMOTE, 0, 0);
+    }
+    return err;
 }
 
 void

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,10 +84,13 @@
 #define CHECK_1ST   0.500000
 #define CHECK_2ND   0.925000
 
-#ifndef OVECCOUNT
-#define OVECCOUNT   30   // pcre, should be multiple of 3
-#endif
+#undef OVECCOUNT
+#undef OVEC_LEN
+#undef FILESIZE
+#undef MAX_SIZE
+#undef ENV_LEN
 
+#define OVECCOUNT   30   // pcre, should be multiple of 3
 #define OVEC_LEN    16
 #define FILESIZE    128
 #define MAX_SIZE    256
@@ -95,6 +98,8 @@
 
 #define SNIPPET_FUNID 100
 #define PERROR_LEN    100
+#define ACTIONS_MAX   100
+#define MAYBE200MS    200
 
 #ifndef MAX_BUFFER
 #define MAX_BUFFER  1024
@@ -106,8 +111,11 @@
 #define VALUE_LEN 4096
 #endif
 #ifndef MAX_ACCELS
-#define MAX_ACCELS 200
+#define MAX_ACCELS 256
 #endif
+
+#define WHITE_SHOW 0x1
+#define BREAK_SHOW 0x2
 
 #define BUFF_32K 0x8000                // 32K
 #define BUFF_64K 0x10000               // 64k
@@ -123,12 +131,13 @@
 #endif
 
 #define REMOTEFS_PROTOCOL_SUBID 0x38
-#define REMOTEFS_ACCESS_SUBID 0x39
-#define SEARCH_COMBO_SUBID 0x40
-#define SNIPPET_EDT_SUBID 0x41
-#define SNIPPET_CMB_SUBID 0x42
-#define TBCTL_LIST_SUBID 0x43
-#define STATUSBAR_SUBID 0x44
+#define REMOTEFS_ACCESS_SUBID   0x39
+#define SEARCH_COMBO_SUBID      0x40
+#define SNIPPET_EDT_SUBID       0x41
+#define SNIPPET_CMB_SUBID       0x42
+#define TBCTL_LIST_SUBID        0x43
+#define STATUSBAR_SUBID         0x44
+#define COLUMN_CMB_SUBID        0x45
 
 #define DARK_THEME_APPLY 1
 
@@ -172,15 +181,21 @@
 #define WM_BACKUP_CONFIG          (WM_USER+10031)
 #define WM_BACKUP_BOTH            (WM_USER+10032)
 #define WM_BACKUP_ALL             (WM_USER+10033)
+#define WM_PROCESS_ID             (WM_USER+10034)
 
-// Tab notification message
-#define TCN_TABDROPPED_OUT        (WM_USER+20000)
+#define WM_PCRE_ADDSTRING         (WM_USER+12000)
+#define WM_JSON_PASSED            (WM_USER+12001)
+#define WM_JSON_POSITION          (WM_USER+12002)
+
+#define WM_OPENAI_TALK            (WM_USER+12010)
+#define WM_OPENAI_DATA            (WM_USER+12011)
 
 #define EU_CONFIG_DIR             _T("__skylakr_user_config_path__")
 
 #define eu_int_cast(n) ((int)((intptr_t)(n)))
 #define eu_uint_cast(n) ((uint32_t)((uintptr_t)(n)))
 #define FONT_SIZE_DPI(fontsize) (-MulDiv((fontsize), eu_get_dpi(NULL), USER_DEFAULT_SCREEN_DPI))
+#define EU_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #if APP_DEBUG
 #define EU_ABORT(...) (eu_logmsg(__VA_ARGS__), exit(-1))
@@ -370,6 +385,15 @@ typedef struct _print_set
     RECT rect;
 }print_set;
 
+typedef struct _columnctl_set
+{
+    int initnum;
+    int increase;
+    int repeater;
+    int leading;
+    int format;
+}columnctl_set;
+
 typedef struct _titlebar_set
 {
     bool icon;
@@ -417,8 +441,19 @@ typedef struct _upgrade_set
     int  flags;
     int  msg_id;
     uint64_t last_check;
-    char url[MAX_BUFFER];
+    char url[MAX_PATH];
 }upgrade_set;
+
+typedef struct _openai_set
+{
+    bool think;
+    bool stream;
+    int  max_tokens;
+    char key[QW_SIZE];
+    char model[QW_SIZE];
+    char base[FILESIZE];
+    char setting[MAX_BUFFER];
+}openai_set;
 
 typedef struct _customize_set
 {
@@ -430,7 +465,6 @@ typedef struct _customize_set
     int  posid;
     uintptr_t hbmp;
 }customize_set;
-
 typedef struct _mstab_set
 {
     bool vertical;
@@ -471,11 +505,8 @@ struct eu_config
 
     uint32_t last_flags;
     uint32_t history_mask;
-    bool ws_visiable;
-    int ws_size;
-    bool newline_visialbe;
 
-    bool m_indentation;
+    bool alignedge;
     int tab_width;
     bool tab2spaces;
     bool light_fold;
@@ -500,19 +531,20 @@ struct eu_config
 
     bool block_fold;
     bool m_tab_tip;
-    bool m_code_hint;
     bool m_tab_split;
-
+    
+    int m_code_hint;
     int m_close_way;
     int m_close_draw;
     int m_new_way;
     int m_tab_active;
     int m_quality;
     int m_render;
-    int m_upfile;
-    int m_up_notify;
-    int m_doc_restrict;
+    int  m_upfile;
+    int  m_up_notify;
+    int  m_doc_restrict;
 
+    bool m_undo_selection;
     bool m_light_str;
     bool m_write_copy;
     bool m_session;
@@ -526,16 +558,19 @@ struct eu_config
     calltip_set eu_calltip;
     complete_set eu_complete;
     print_set eu_print;
+    columnctl_set eu_column;
     titlebar_set eu_titlebar;
     mstab_set eu_tab;
     bool m_hyperlink;
     int m_limit;
     upgrade_set upgrade;
+    openai_set openai;
+    char sep_copy[MAX_PATH];
     char m_path[MAX_PATH];
     char editor[MAX_PATH];
     char m_reserved_0[MAX_PATH];
     char m_reserved_1[MAX_PATH];
-    char m_actions[100][MAX_PATH];
+    char m_actions[ACTIONS_MAX][MAX_PATH];
     customize_set m_customize[DW_SIZE];
 };
 
@@ -618,11 +653,9 @@ EU_EXT_CLASS void eu_sqlite3_free(void *point);
 EU_EXT_CLASS int eu_sqlite3_close(sqlite3 *);
 EU_EXT_CLASS int eu_sqlite3_send(const char *sql, sql3_callback, void *);
 EU_EXT_CLASS void eu_push_find_history(const char *key);
-EU_EXT_CLASS void eu_delete_find_history(const char *key);
+EU_EXT_CLASS void eu_delete_find_history(const char *table, const char *key);
 EU_EXT_CLASS void eu_push_replace_history(const char *key);
-EU_EXT_CLASS void eu_delete_replace_history(const char *key);
 EU_EXT_CLASS void eu_push_folder_history(const char *key);
-EU_EXT_CLASS void eu_delete_folder_history(const char *key);
 EU_EXT_CLASS void eu_update_backup_table(file_backup *pbak, int mode);
 EU_EXT_CLASS void eu_get_find_history(sql3_callback pfunc);
 EU_EXT_CLASS void eu_get_replace_history(sql3_callback pfunc);
@@ -631,7 +664,7 @@ EU_EXT_CLASS void eu_get_folder_history(sql3_callback pfunc);
 // eu_api.c
 EU_EXT_CLASS bool eu_touch(LPCTSTR path);
 EU_EXT_CLASS bool eu_exist_path(const char *path);
-EU_EXT_CLASS bool eu_which(const char *path);
+EU_EXT_CLASS bool eu_which(const char *path, char **pout);
 EU_EXT_CLASS bool eu_mk_dir(LPCTSTR dir);
 EU_EXT_CLASS bool eu_exist_dir(LPCTSTR path);
 EU_EXT_CLASS bool eu_exist_file(LPCTSTR path);
@@ -663,14 +696,16 @@ EU_EXT_CLASS struct eu_config *eu_get_config(void);
 EU_EXT_CLASS eue_accel *eu_get_accel(void);
 EU_EXT_CLASS eue_toolbar *eu_get_toolbar(void);
 EU_EXT_CLASS void eu_api_release(void);
+EU_EXT_CLASS void *eu_tabpage_from_handle(void *hwnd_sc);
 
 EU_EXT_CLASS const int eu_theme_index(void);
 EU_EXT_CLASS const uint32_t eu_win10_or_later(void);
 EU_EXT_CLASS const bool eu_win11_or_later(void);
-EU_EXT_CLASS char *eu_strcasestr(const char *haystack, const char *needle);
+EU_EXT_CLASS TCHAR *eu_tcasestr(const TCHAR *haystack, const TCHAR *needle);
 EU_EXT_CLASS const char *eu_query_encoding_name(int code);
 EU_EXT_CLASS const uint8_t *eu_memstr(const uint8_t *haystack, const char *needle, size_t size);
 EU_EXT_CLASS int eu_sunday(const uint8_t *str, const uint8_t *pattern, size_t n, size_t b, bool incase, bool whole, bool reverse, intptr_t *pret);
+EU_EXT_CLASS int eu_query_encoding_index(const char *coding);
 EU_EXT_CLASS int eu_sunday_hex(const uint8_t *str, const char *pattern, size_t str_len, bool reverse, intptr_t *pret);
 EU_EXT_CLASS TCHAR *eu_process_path(void);
 EU_EXT_CLASS void eu_save_config(void);
@@ -683,9 +718,26 @@ EU_EXT_CLASS bool eu_init_completed_tree(doctype_t *root, const char *str);
 EU_EXT_CLASS void eu_print_completed_tree(root_t *acshow_root);
 EU_EXT_CLASS char *eu_find_completed_tree(root_t *acshow_root, const char *key, const char *pre_str);
 EU_EXT_CLASS void eu_destory_completed_tree(root_t *root);
-EU_EXT_CLASS void eu_sci_scroll(void *p);
-EU_EXT_CLASS HWND eu_tabpage_hwnd(void *p);
-EU_EXT_CLASS void *eu_tabpage_from_handle(void *hwnd_sc);
+
+EU_EXT_CLASS char *eu_sci_range(const eu_tabpage *p, const sptr_t start, const sptr_t end);
+EU_EXT_CLASS char *eu_strdup_range(const int t, const sptr_t start, const sptr_t end);
+EU_EXT_CLASS char *eu_strdup_line(const int t, const sptr_t line_number);
+EU_EXT_CLASS char *eu_strdup_select(const int t);
+EU_EXT_CLASS char *eu_strdup_content(const int index);
+EU_EXT_CLASS char *eu_file_path(const int t);
+EU_EXT_CLASS char *eu_file_name(const int t);
+EU_EXT_CLASS size_t eu_file_size(const int t);
+EU_EXT_CLASS int eu_file_close(const int t, const int mode);
+EU_EXT_CLASS int eu_file_open(const wchar_t *path);
+EU_EXT_CLASS void eu_file_save_all(void);
+EU_EXT_CLASS intptr_t eu_value(void *p);
+EU_EXT_CLASS intptr_t eu_sci_cmd(const eu_tabpage *p, const int m, const sptr_t w, const sptr_t l);
+EU_EXT_CLASS intptr_t eu_end_positon(const int t);
+EU_EXT_CLASS intptr_t eu_line_start_positon(const int t, const sptr_t line);
+EU_EXT_CLASS intptr_t eu_line_end_positon(const int t, const sptr_t line);
+EU_EXT_CLASS int eu_tab_focus_index(void);
+EU_EXT_CLASS int eu_tab_last_index(void);
+EU_EXT_CLASS void eu_tab_select(const int index);
 
 // for tinyexpr.c
 EU_EXT_CLASS double eu_te_eval(const te_expr *n);
@@ -715,7 +767,7 @@ EU_EXT_CLASS int eu_pcre_exec_multi(pcre_conainer *pcre_info, ptr_recallback pba
 // for scintilla
 EU_EXT_CLASS int eu_sci_register(HINSTANCE hinstance);
 EU_EXT_CLASS int eu_sci_release(void);
-EU_EXT_CLASS sptr_t eu_sci_call(eu_tabpage *p, int m, sptr_t w, sptr_t l);
+EU_EXT_CLASS sptr_t eu_sci_call(const int t, const int m, const sptr_t w, const sptr_t l);
 EU_EXT_CLASS void eu_send_notify(HWND hwnd, uint32_t code, LPNMHDR nmhdr);
 
 // for iconv
@@ -732,10 +784,11 @@ extern ptr_curl_easy_getinfo eu_curl_easy_getinfo;
 extern ptr_curl_slist_append eu_curl_slist_append;
 extern ptr_curl_slist_free_all eu_curl_slist_free_all;
 
-extern int eu_curl_global_init(long flags);
+extern CURL *eu_curl_easy_init(void);
+extern int  eu_curl_global_init(long flags);
 extern void eu_curl_global_cleanup(void);
-extern CURL* eu_curl_easy_init(void);
-extern void eu_curl_easy_cleanup(CURL *);
+extern void eu_curl_easy_cleanup(CURL *curl);
+extern void eu_curl_ssl_setting(CURL *curl);
 
 extern TCHAR eu_module_path[MAX_PATH+1];
 extern TCHAR eu_config_path[MAX_BUFFER];
@@ -768,19 +821,19 @@ EU_EXT_CLASS int eu_reg_dir_popup_menu(void);
 EU_EXT_CLASS bool eu_hook_exception(void);
 
 // for eu_share.c
-EU_EXT_CLASS bool share_envent_create(void);
 EU_EXT_CLASS void share_close_lang(void);
+EU_EXT_CLASS LPVOID share_map(HANDLE hmap, size_t bytes, uint32_t dw_access);
 EU_EXT_CLASS void share_send_msg(void *param, const size_t len);
+EU_EXT_CLASS HANDLE share_load_lang(void);
+EU_EXT_CLASS HANDLE share_create(HANDLE handle, uint32_t dw_protect, size_t size, LPCTSTR name);
+EU_EXT_CLASS void share_unmap(LPVOID memory);
 EU_EXT_CLASS void share_close(HANDLE handle);
+EU_EXT_CLASS HANDLE share_open(uint32_t dw_access, LPCTSTR name);
+EU_EXT_CLASS bool share_envent_create(void);
 EU_EXT_CLASS void share_envent_set(const bool signaled);
 EU_EXT_CLASS void share_envent_close(void);
 EU_EXT_CLASS void share_envent_release(void);
-EU_EXT_CLASS void share_unmap(LPVOID memory);
-EU_EXT_CLASS LPVOID share_map(HANDLE hmap, size_t bytes, uint32_t dw_access);
-EU_EXT_CLASS HANDLE share_open(uint32_t dw_access, LPCTSTR name);
 EU_EXT_CLASS HANDLE share_envent_open_file_sem(void);
-EU_EXT_CLASS HANDLE share_load_lang(void);
-EU_EXT_CLASS HANDLE share_create(HANDLE handle, uint32_t dw_protect, size_t size, LPCTSTR name);
 
 // for eu_search.c
 EU_EXT_CLASS HWND eu_get_search_hwnd(void);
@@ -801,7 +854,7 @@ EU_EXT_CLASS bool eu_config_load_toolbar(void);
 EU_EXT_CLASS bool eu_config_load_docs(void);
 EU_EXT_CLASS bool eu_config_load_files(void);
 EU_EXT_CLASS bool eu_config_init_path(void);
-EU_EXT_CLASS bool eu_config_check_arg(const wchar_t **args, int argc, const wchar_t *);
+EU_EXT_CLASS bool eu_config_check_arg(const wchar_t **args, int argc, const wchar_t *, int *);
 EU_EXT_CLASS bool eu_config_parser_path(const wchar_t **args, int argc, file_backup **pbak);
 
 // for eu_script.c
@@ -858,7 +911,6 @@ EU_EXT_CLASS int on_doc_init_after_redis(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_python(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_lua(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_perl(eu_tabpage *pnode);
-EU_EXT_CLASS int on_doc_init_after_shell(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_rust(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_ruby(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_lisp(eu_tabpage *pnode);
@@ -875,6 +927,8 @@ EU_EXT_CLASS int on_doc_init_after_cmake(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_log(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_nim(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_shell_sh(eu_tabpage *pnode);
+EU_EXT_CLASS int on_doc_init_after_shell_batch(eu_tabpage *pnode);
+EU_EXT_CLASS int on_doc_init_after_shell_power(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_properties(eu_tabpage *pnode);
 EU_EXT_CLASS int on_doc_init_after_diff(eu_tabpage *pnode);
 
@@ -936,6 +990,24 @@ EU_EXT_CLASS void on_doc_commentdoc_light(eu_tabpage *pnode, int lex, intptr_t r
 
 /* for eu_xmlist.c */
 EU_EXT_CLASS bool eu_xml_pretty(void *ptr, struct opt_format *opt);
+
+/* for eu_commands.c */
+EU_EXT_CLASS bool eu_command_xsave(const int t);
+EU_EXT_CLASS bool eu_command_reload(const int t, const char *enc);
+EU_EXT_CLASS bool eu_command_convert(const int t, const char *enc);
+EU_EXT_CLASS bool eu_command_saveas(const int t, const char *path, const int mode);
+EU_EXT_CLASS bool eu_command_search(const int t, const char *key, const uint32_t opt);
+EU_EXT_CLASS bool eu_command_replace(const int t, const char *key, const char *replace, const sptr_t n1, const sptr_t n2, const uint32_t opt);
+EU_EXT_CLASS bool eu_command_tabs_hint(const char *str, const bool focus);
+EU_EXT_CLASS void eu_command_which(const char *str);
+EU_EXT_CLASS void eu_command_jump(const int t, const intptr_t line);
+EU_EXT_CLASS void eu_command_run(const int t, const char *str, const bool fnclose);
+EU_EXT_CLASS void eu_command_talk(const int t, const char *str);
+EU_EXT_CLASS void eu_command_launch(const int t);
+EU_EXT_CLASS int  eu_command_save(const int t);
+
+/* for eu_columnctl.c */
+EU_EXT_CLASS HWND eu_column_hwnd(void);
 
 #ifdef __cplusplus
 }

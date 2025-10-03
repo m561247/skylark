@@ -78,6 +78,7 @@ BEGIN
     BEGIN
         MENUITEM "撤销(&U)",                                    IDM_EDIT_UNDO
         MENUITEM "重做(&R)",                                    IDM_EDIT_REDO
+        MENUITEM "撤销时恢复选中(&S)",                          IDM_EDIT_UNDO_SELECTION
         MENUITEM MF_SEPARATOR
         MENUITEM "剪切",                                        IDM_EDIT_CUT
         MENUITEM "复制",                                        IDM_EDIT_COPY
@@ -139,6 +140,7 @@ BEGIN
             MENUITEM "斜线转反斜线(路径格式)",                  IDM_EDIT_SLASH_BACKSLASH
             MENUITEM "反斜线转斜线(路径格式)",                  IDM_EDIT_BACKSLASH_SLASH
         END
+        MENUITEM "列编辑器 ...",                                IDM_EDIT_COLUMN_EXEC
         MENUITEM MF_SEPARATOR
         POPUP "选区操作(&O)",                                   IDM_EDIT_SELECT_GROUP
         BEGIN
@@ -149,10 +151,10 @@ BEGIN
             MENUITEM "在百度中搜索(&B)",                        IDM_ONLINE_SEARCH_BAIDU
             MENUITEM "在必应中搜索(&I)",                        IDM_ONLINE_SEARCH_BING
         END
-        POPUP "BASE64编解/解码",                                IDM_EDIT_PLACEHOLDE7
+        POPUP "Base64编解/解码",                                IDM_EDIT_PLACEHOLDE7
         BEGIN
-            MENUITEM "BASE64编码",                              IDM_EDIT_BASE64_ENCODING
-            MENUITEM "BASE64解码",                              IDM_EDIT_BASE64_DECODING
+            MENUITEM "Base64编码",                              IDM_EDIT_BASE64_ENCODING
+            MENUITEM "Base64解码",                              IDM_EDIT_BASE64_DECODING
         END
         POPUP "散列/消息摘要",                                  IDM_EDIT_PLACEHOLDE8
         BEGIN
@@ -332,6 +334,13 @@ BEGIN
         END
         POPUP "标签栏其他选项"
         BEGIN
+            MENUITEM "标签(名称升序)",                          IDM_VIEW_TABS_NAME_ASCEND
+            MENUITEM "标签(名称降序)",                          IDM_VIEW_TABS_NAME_ADESCEND
+            MENUITEM "标签(类型升序)",                          IDM_VIEW_TABS_TYPE_ASCEND
+            MENUITEM "标签(类型降序)",                          IDM_VIEW_TABS_TYPE_ADESCEND
+            MENUITEM "标签(尺寸升序)",                          IDM_VIEW_TABS_SIZE_ASCEND
+            MENUITEM "标签(尺寸降序)",                          IDM_VIEW_TABS_SIZE_ADESCEND
+            MENUITEM MF_SEPARATOR
             MENUITEM "垂直拆分标签栏",                          IDM_VIEW_VERTICAL_SPLIT
             MENUITEM "复制到另一视图",                          IDM_VIEW_OTHER_COPY
             MENUITEM "移动到另一视图",                          IDM_VIEW_OTHER_MOVE
@@ -364,10 +373,10 @@ BEGIN
             MENUITEM "格式化 Js",                               IDM_FORMAT_REFORMAT_JS
             MENUITEM "压缩 Js",                                 IDM_FORMAT_COMPRESS_JS
         END
-        POPUP "XML 文件",                                       IDM_EDIT_PLACEHOLDE_XML
+        POPUP "Xml 文件",                                       IDM_EDIT_PLACEHOLDE_XML
         BEGIN
-            MENUITEM "格式化 XML",                              IDM_FORMAT_REFORMAT_XML
-            MENUITEM "压缩 XML",                                IDM_FORMAT_COMPRESS_XML
+            MENUITEM "格式化 Xml",                              IDM_FORMAT_REFORMAT_XML
+            MENUITEM "压缩 Xml",                                IDM_FORMAT_COMPRESS_XML
         END
         POPUP "Lua 脚本",                                       IDM_EDIT_PLACEHOLDE_LUA
         BEGIN
@@ -428,7 +437,8 @@ BEGIN
             MENUITEM "管理代码片段",                            IDM_SOURCE_SNIPPET_CONFIGURE
         END
         MENUITEM MF_SEPARATOR
-        MENUITEM "使用预设动作执行当前文件",                    IDM_PROGRAM_EXECUTE_ACTION
+        MENUITEM "转换为C/C++数组类型",                         IDM_PROGRAM_CPLUS
+        MENUITEM "使用预设动作执行此类文件",                    IDM_PROGRAM_EXECUTE_ACTION
     END
     POPUP "设置(&T)"
     BEGIN
@@ -449,26 +459,29 @@ BEGIN
         MENUITEM "修改主题方案 ...",                            IDM_VIEW_MODIFY_STYLETHEME
         MENUITEM "复制创建主题 ...",                            IDM_VIEW_COPYNEW_STYLETHEME
         MENUITEM MF_SEPARATOR
-        POPUP "字体质量(&Q)",                                   IDM_SETTING_FONTQUALITY
+        POPUP "字体质量(&Q)",                                   IDM_SETTING_FONTQUALITY_GROUP
         BEGIN
             MENUITEM "无",                                      IDM_VIEW_FONTQUALITY_NONE
             MENUITEM "标准抗锯齿",                              IDM_VIEW_FONTQUALITY_STANDARD
             MENUITEM "ClearType",                               IDM_VIEW_FONTQUALITY_CLEARTYPE
         END
-        POPUP "渲染技术(&D)",                                   IDM_SETTING_RENDER
+        POPUP "渲染技术(&D)",                                   IDM_SETTING_RENDER_GROUP
         BEGIN
-            MENUITEM "传统 GDI",                                IDM_SET_RENDER_TECH_GDI
-            MENUITEM "DirectWrite",                             IDM_SET_RENDER_TECH_D2D
-            MENUITEM "DirectWrite Retain",                      IDM_SET_RENDER_TECH_D2DRETAIN
+            MENUITEM "传统 GDI(&G)",                            IDM_SET_RENDER_TECH_GDI
+            MENUITEM "DirectWrite(&D)",                         IDM_SET_RENDER_TECH_D2D
+            MENUITEM "DirectWrite Retain(&R)",                  IDM_SET_RENDER_TECH_D2DRETAIN
+            MENUITEM "DirectWrite Gdi DC(&I)",                  IDM_SET_RENDER_TECH_DC
+            MENUITEM "DirectWrite 1.1(&W)",                     IDM_SET_RENDER_TECH_D2D1_1
         END
         MENUITEM MF_SEPARATOR
-        POPUP "自定义命令 ...",                                 IDM_SET_PLACEHOLDE_CUSTOMIZED
+        POPUP "自定义命令",                                     IDM_SET_PLACEHOLDE_CUSTOMIZED
         BEGIN
             MENUITEM "设置运行路径(&S)",                        IDM_SET_SETTINGS_CONFIG
             MENUITEM MF_SEPARATOR
         END
-        MENUITEM "翻新Skylark ...",                             IDM_SET_RESET_CONFIG
+        MENUITEM "翻新Skylark",                                 IDM_SET_RESET_CONFIG
         MENUITEM MF_SEPARATOR
+        MENUITEM "文件变更通知(&C)",                            IDM_SET_CHANGENOTIFY
         MENUITEM "启用运行时日志(&L)",                          IDM_SET_LOGGING_ENABLE
         MENUITEM MF_SEPARATOR
         MENUITEM "文件间隔[N]秒自动保存",                       IDM_FILE_SAVE_NOTIFY
@@ -478,8 +491,8 @@ BEGIN
     POPUP "帮助(&H)"
     BEGIN
         MENUITEM "捐赠我们",                                    IDM_DONATION
-        MENUITEM "功能简介(&O) ...",                            IDM_INTRODUTION
-        MENUITEM "更新历史(&H) ...",                            IDM_CHANGELOG
+        MENUITEM "功能简介(&O)",                                IDM_INTRODUTION
+        MENUITEM "更新历史(&H)",                                IDM_CHANGELOG
         MENUITEM "命令行参数(&C) ...",                          IDM_HELP_COMMAND
         MENUITEM "关于(&A) ...",                                IDM_ABOUT
     END
@@ -574,11 +587,11 @@ IDR_FILETREE_FAVORITE_POPUP MENU
 BEGIN
     POPUP "0"
     BEGIN
-        MENUITEM "打开(&O)",                                        IDM_FAVORITE_OPEN
+        MENUITEM "打开(&O)",                                    IDM_FAVORITE_OPEN
         MENUITEM SEPARATOR
-        MENUITEM "移除(&R)",                                        IDM_FAVORITE_REMOVE
+        MENUITEM "移除(&R)",                                    IDM_FAVORITE_REMOVE
         MENUITEM SEPARATOR
-        MENUITEM "属性(&P)",                                        IDM_FAVORITE_ATTR
+        MENUITEM "属性(&P)",                                    IDM_FAVORITE_ATTR
     END
 END
 
@@ -896,6 +909,7 @@ BEGIN
             MENUITEM "mac-cyrillic",                  IDM_OTHER_2
             MENUITEM "mac-centraleurope",             IDM_OTHER_3
             MENUITEM "本地编码",                      IDM_OTHER_ANSI
+            MENUITEM "Iconv 支持",                    IDM_OTHER_ICONV,,0x00000003
             MENUITEM "二进制编码",                    IDM_OTHER_BIN,,0x00000003
             MENUITEM "插件编码",                      IDM_OTHER_PLUGIN,,0x00000003
             MENUITEM "未知编码",                      IDM_UNKNOWN,,0x00000003
@@ -1091,7 +1105,7 @@ BEGIN
 END
 
 /////////////////////////////////////////////////////////////////////////////
-#define __EU_COPYRIGHT_TRANSLATION "Copyright © 2023 by ualy123"
+#define __EU_COPYRIGHT_TRANSLATION "Copyright © 2025 by ualy123"
 /////////////////////////////////////////////////////////////////////////////
 
 //
@@ -1237,7 +1251,7 @@ STRINGTABLE DISCARDABLE
 {
     IDS_BUTTON_R                     "只读"
     IDS_BUTTON_W                     "读写"
-    IDS_STATUS_F1                    "文件时间戳: %s"
+    IDS_STATUS_F1                    "%d 个文件, 时间戳: %s"
     IDS_STATUS_XY                    "光标 (行 %zu, 列 %zu)"
     IDS_STATUS_LC                    "文件: %zd/%zd (字节)"
     IDS_STATUS_LD                    "选择: %zd/%zu (字符/行)"
@@ -1269,7 +1283,7 @@ STRINGTABLE DISCARDABLE
     IDC_MSG_ATTACH_FAIL     "连接远程文件服务器失败"
     IDC_MSG_ATTACH_FAIL1    "连接远程文件服务器失败, 无效的私钥或者私钥口令错误"
     IDC_MSG_ATTACH_FAIL2    "连接远程文件服务器失败, 用户名或密码错误"
-    IDC_MSG_ATTACH_FAIL3    "初始化libcurl错误, 可能没找到函数入口"
+    IDC_MSG_ATTACH_FAIL3    "» » 初始化libcurl错误, 可能没找到函数入口"
     IDC_MSG_ATTACH_ERRORS   "链接错误, 原因: %s"
     IDC_MSG_OPENSSL_FAIL    "初始化libopenssl错误, 可能没找到函数入口"
     IDC_MSG_ATTACH_SUCCESS  "连接远程文件服务器成功"
@@ -1295,7 +1309,7 @@ STRINGTABLE DISCARDABLE
     IDC_MSG_TAB_LEN         "请输入制表符宽度:"
     IDC_MSG_SCINTILLA_ERR1  "创建Scintilla控件失败"
     IDC_MSG_ICONV_FAIL1     "文件编码转换失败"
-    IDC_MSG_ICONV_FAIL2     "文本编码识别错误, 导致文件没有打开, 请联系开发者"
+    IDC_MSG_ICONV_FAIL2     "文本编码识别错误, 你可能需要通过命令行指定正确的编码"
     IDC_MSG_TABCONTROL_FAIL "创建TabControl控件失败"
     IDC_MSG_CONV_TIPS       "多字节编码转换时, 可能存在内容丢失的风险. 需要继续吗?\n注意, 新编码的应用在文件保存后才真正生效."
     IDC_MSG_CONV_FAIL1      "测试编码转换失败, 我们回退到原编码."
@@ -1346,7 +1360,7 @@ STRINGTABLE DISCARDABLE
     IDC_MSG_REGIST_ERR35    "不能在注册表删除项 Drive\\shell\\skylark2 "
     IDC_MSG_REGIST_ERR36    "不能在注册表删除项 Drive\\shell\\skylark2 "
     IDC_MSG_JUST_HELP       "即时帮助"
-    IDC_MSG_HELP_INF1       "使用快捷键 'Ctrl+鼠标点选' 进行多个位置选择, 支持多行的输入,删除,复制等操作"
+    IDC_MSG_HELP_INF1       "使用快捷键 'Ctrl+鼠标点选' 进行多个位置选择, 支持多行的输入,删除,复制等操作\n多重选择进行粘贴时, 支持自定义分隔符"
     IDC_MSG_EXEC_ERR1       "进程启动失败, 请检测进程路径是否正确!"
     IDC_MSG_EDIT_ERR1       "创建EDIT消息控件错误"
     IDC_MSG_SYMTREE_ERR1    "创建符号树控件错误"
@@ -1472,7 +1486,7 @@ STRINGTABLE DISCARDABLE
     IDS_EDITOR_BCOMPARE     "Bcompare路径: "
     IDS_THEME_TIPS1         "提示: 此页面的编辑器字体由用户脚本实现, 不随主题"
     IDS_THEME_TIPS2         "提示: 此页面的部分关键字前景色由用户脚本实现, 不随主题"
-    IDS_RE_ERROR            "错误: 无效的正则表达式"
+    IDS_RE_ERROR            "» » 错误: 无效的正则表达式"
     IDS_HEXVIEW_BYTES       "插入的字节数(十进制): "
     IDS_RESULT_STR_TIPS     "匹配数量已经超过 131071 次, 如果继续搜索, 将耗费大量时间, 是否终止?\n"
     IDS_RESULT_STR_WARN     "» » 搜索 '%s' 关键字, 在 '%s' 文件中 (匹配超过%d次, 将不展示超出的匹配项)\n"
@@ -1512,6 +1526,26 @@ STRINGTABLE DISCARDABLE
     IDS_UNDO_UNCLOSE_TIPS   "文件曾执行过编码转换或换行符转换, 你应该尽快保存文件以免'撤销/重做'操作影响到文件状态"
     IDS_HISTORY_CLEAR_UNDO  "该操作将会清空撤销历史, 影响'撤销/重做', 是否继续?"
     IDS_MINMAP_DESC         "文档结构图"
+    IDS_PRIFILES_WARNING    "修改配置文件可能会影响编辑器的稳定性, 是否继续?"
+    IDS_COLUMN_FILL_NONE    "无"
+    IDS_COLUMN_FILL_ZEROS   "补零"
+    IDS_COLUMN_FILL_SPACES  "补空格"
+    IDS_WHICH_NONE          "» » 在 PATH 环境变量, 没有 %s"
+    IDS_WHICH_EXIST         "» » %s"
+    IDS_NOT_SUPPORTED       "» » 不支持的操作"
+    IDS_SAVE_HOME           "» » 文档保存在用户主目录"
+    IDS_CMDS_ERROR          "» » 文件打开失败或空文件"
+    IDS_OPENAI_KEY_ERR      "» » 未知的API Key或URL"
+    IDS_OPENAI_FORMAT_ERR   "» » 请求体格式错误"
+    IDS_OPENAI_AUTH_FAILD   "» » API Key认证失败"
+    IDS_INSUFFICIENT_BAL    "» » 账户余额不足"
+    IDS_OPENAI_PARAMETE_ERR "» » 参数错误"
+    IDS_OPENAI_TMP_ERR      "» » 请求速率达到上限"
+    IDS_OPENAI_SERV_FAILURE "» » 服务器故障"
+    IDS_OPENAI_SERV_BUSY    "» » 服务器繁忙"
+    IDS_OPENAI_SERV_THINK   "» » 思考中 ..."
+    IDS_OPENAI_SERV_404     "» » 页面没找到, 请检查 URL 设置"
+    IDS_OPENAI_DATA_ERR     "» » 错误, 数据异常"
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1523,9 +1557,9 @@ STYLE WS_CAPTION|WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 BEGIN
   CONTROL "查找目标: ",IDC_WHAT_STATIC_FIFOLDER,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,12,20,42,12
-  CONTROL "",IDC_WHAT_FOLDER_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN,54,20,207,13
+  CONTROL "",IDC_WHAT_FOLDER_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN|WS_VSCROLL,54,20,207,13
   CONTROL "替换为: ",IDC_SEARCH_RP_STC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,12,36,42,12
-  CONTROL "",IDC_SEARCH_RP_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN,54,36,207,12
+  CONTROL "",IDC_SEARCH_RP_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN|WS_VSCROLL,54,36,207,12
   CONTROL "文件类型: ",IDC_SEARCH_FY_STC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,12,36,42,12
   CONTROL "",IDC_SEARCH_FY_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN,54,36,207,12
   CONTROL "目录: ",IDC_SEARCH_DIR_STC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,12,54,42,12
@@ -1639,4 +1673,29 @@ BEGIN
   CONTROL "关闭",IDC_SNIPPET_BTN_CLOSE,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,411,275,54,15
   CONTROL "确定",IDC_SNIPPET_BTN_APPLY,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,351,275,54,15
   CONTROL "新建",IDC_SNIPPET_NEW,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,57,275,45,15
+END
+
+IDD_COLUMNEDIT_DLG DIALOGEX 6,6,213,177
+CAPTION "列编辑器"
+FONT 8,"MS Sans Serif",0,0,0
+STYLE WS_CAPTION|WS_SYSMENU|WS_VISIBLE
+EXSTYLE WS_EX_WINDOWEDGE
+BEGIN
+    CONTROL "插入数字",IDC_COL_NUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|SS_CENTERIMAGE,6,3,201,15
+    CONTROL "",IDC_COL_NUM_GRP_STATIC,"Button",WS_CHILDWINDOW|WS_VISIBLE|BS_GROUPBOX,3,18,204,130
+    CONTROL "初始值 :",IDC_COL_INITNUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,30,76,8
+    CONTROL "",IDC_COL_INITNUM_EDIT,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_NUMBER,90,30,38,12,WS_EX_CLIENTEDGE
+    CONTROL "增量 :",IDC_COL_INCRNUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,46,75,8
+    CONTROL "",IDC_COL_INCREASENUM_EDIT,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_NUMBER,90,45,38,12,WS_EX_CLIENTEDGE
+    CONTROL "重复次数 :",IDC_COL_REPEATNUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,63,75,8
+    CONTROL "",IDC_COL_REPEATNUM_EDIT,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_NUMBER,90,60,38,12,WS_EX_CLIENTEDGE
+    CONTROL "开头补齐: ",IDC_COL_LEADING_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,78,75,8
+    CONTROL "",IDC_COL_LEADING_COMBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_DROPDOWNLIST,90,75,103,30
+    CONTROL "格式",IDC_COL_FORMAT_GRP_STATIC,"Button",WS_CHILDWINDOW|WS_VISIBLE|BS_CENTER|BS_GROUPBOX,10,96,184,44
+    CONTROL "十进制(&D)",IDC_COL_DEC_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,21,105,70,10
+    CONTROL "十六进制(&H)",IDC_COL_HEX_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,117,105,70,10
+    CONTROL "八进制(&O)",IDC_COL_OCT_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,21,120,70,10
+    CONTROL "二进制(&B)",IDC_COL_BIN_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,117,120,70,10
+    CONTROL "确定",IDOK,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|BS_DEFPUSHBUTTON,54,156,70,14
+    CONTROL "取消",IDCANCEL,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,137,156,70,14
 END

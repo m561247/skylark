@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,8 @@ extern "C"
 #endif
 
 int  on_format_js_callback(const uint8_t *text, uint8_t **pbuf);
-int  on_format_json_callback(const uint8_t *text, uint8_t **pbuf);
+int  on_format_json_format(const uint8_t *text, uint8_t **pbuf);
+int  on_format_json_unformat(const uint8_t *text, uint8_t **pbuf);
 int  on_format_xml_compress(eu_tabpage *pnode);
 void on_format_file_style(eu_tabpage *pnode);
 void on_format_do_compress(eu_tabpage *pnode, format_back fn); 

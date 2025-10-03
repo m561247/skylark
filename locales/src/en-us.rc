@@ -78,6 +78,7 @@ BEGIN
     BEGIN
         MENUITEM "&Undo",                                              IDM_EDIT_UNDO
         MENUITEM "&Redo",                                              IDM_EDIT_REDO
+        MENUITEM "Restore &Selection When Undo",                       IDM_EDIT_UNDO_SELECTION
         MENUITEM MF_SEPARATOR
         MENUITEM "Cu&t",                                               IDM_EDIT_CUT
         MENUITEM "&Copy",                                              IDM_EDIT_COPY
@@ -125,6 +126,7 @@ BEGIN
             MENUITEM "Sort Lines Lexicographically Descending",        IDM_EDIT_DESCENDING_SORT
             MENUITEM "Sort Lines Lex. Descending Ignoring Case",       IDM_EDIT_DESCENDING_SORT_IGNORECASE
         END
+        MENUITEM "Column Editor ...",                                  IDM_EDIT_COLUMN_EXEC
         MENUITEM MF_SEPARATOR
         POPUP "Convert",                                               IDM_EDIT_PLACEHOLDE6
         BEGIN
@@ -149,10 +151,10 @@ BEGIN
             MENUITEM "Search With &Baidu",                             IDM_ONLINE_SEARCH_BAIDU
             MENUITEM "Search With B&ing",                              IDM_ONLINE_SEARCH_BING
         END
-        POPUP "BASE64 Encoding/Decoding",                              IDM_EDIT_PLACEHOLDE7
+        POPUP "Base64 Encoding/Decoding",                              IDM_EDIT_PLACEHOLDE7
         BEGIN
-            MENUITEM "BASE64 Encoding",                                IDM_EDIT_BASE64_ENCODING
-            MENUITEM "BASE64 Decoding",                                IDM_EDIT_BASE64_DECODING
+            MENUITEM "Base64 Encoding",                                IDM_EDIT_BASE64_ENCODING
+            MENUITEM "Base64 Decoding",                                IDM_EDIT_BASE64_DECODING
         END
         POPUP "Hash/Message Digest",                                   IDM_EDIT_PLACEHOLDE8
         BEGIN
@@ -332,6 +334,13 @@ BEGIN
         END
         POPUP "Other Options For Tabbar"
         BEGIN
+            MENUITEM "Tabs(Name A to Z)",                              IDM_VIEW_TABS_NAME_ASCEND
+            MENUITEM "Tabs(Name Z to A)",                              IDM_VIEW_TABS_NAME_ADESCEND
+            MENUITEM "Tabs(Type A to Z)",                              IDM_VIEW_TABS_TYPE_ASCEND
+            MENUITEM "Tabs(Type Z to A)",                              IDM_VIEW_TABS_TYPE_ADESCEND
+            MENUITEM "Tabs(Content Length Ascending)",                 IDM_VIEW_TABS_SIZE_ASCEND
+            MENUITEM "Tabs(Content Length Descending)",                IDM_VIEW_TABS_SIZE_ADESCEND
+            MENUITEM MF_SEPARATOR
             MENUITEM "Vertical Split Tabbar",                          IDM_VIEW_VERTICAL_SPLIT
             MENUITEM "Clone To Other View",                            IDM_VIEW_OTHER_COPY
             MENUITEM "Move To Other View",                             IDM_VIEW_OTHER_MOVE
@@ -364,10 +373,10 @@ BEGIN
             MENUITEM "Reformat Js",                                    IDM_FORMAT_REFORMAT_JS
             MENUITEM "Compress Js",                                    IDM_FORMAT_COMPRESS_JS
         END
-        POPUP "XML File",                                              IDM_EDIT_PLACEHOLDE_XML
+        POPUP "Xml File",                                              IDM_EDIT_PLACEHOLDE_XML
         BEGIN
-            MENUITEM "Reformat XML",                                   IDM_FORMAT_REFORMAT_XML
-            MENUITEM "Compress XML",                                   IDM_FORMAT_COMPRESS_XML
+            MENUITEM "Reformat Xml",                                   IDM_FORMAT_REFORMAT_XML
+            MENUITEM "Compress Xml",                                   IDM_FORMAT_COMPRESS_XML
         END
         POPUP "Lua Scripts",                                           IDM_EDIT_PLACEHOLDE_LUA
         BEGIN
@@ -387,7 +396,7 @@ BEGIN
             MENUITEM "Traditional To Simplified",                      IDM_EDIT_BIG5_GB
         END
         MENUITEM MF_SEPARATOR
-        POPUP "Full-width/half-width Conversion",                      IDM_FORMAT_PLACEHOLDE_PUNCTUATION
+        POPUP "Full-width/Half-width Conversion",                      IDM_FORMAT_PLACEHOLDE_PUNCTUATION
         BEGIN
             MENUITEM "Full-width Symbol To Half-width",                IDM_FORMAT_FULL_HALF
             MENUITEM "Half-width Punctuation To Full-width",           IDM_FORMAT_HALF_FULL
@@ -428,6 +437,7 @@ BEGIN
             MENUITEM "Configure Snippets",                             IDM_SOURCE_SNIPPET_CONFIGURE
         END
         MENUITEM MF_SEPARATOR
+        MENUITEM "Convert to C/C++ array type",                        IDM_PROGRAM_CPLUS
         MENUITEM "Execute File With Preset Actions",                   IDM_PROGRAM_EXECUTE_ACTION
     END
     POPUP "Se&ttings"
@@ -449,26 +459,29 @@ BEGIN
         MENUITEM "Customize Theme ...",                                IDM_VIEW_MODIFY_STYLETHEME
         MENUITEM "Copy Create Theme ...",                              IDM_VIEW_COPYNEW_STYLETHEME
         MENUITEM MF_SEPARATOR
-        POPUP "Font &Quality",                                         IDM_SETTING_FONTQUALITY
+        POPUP "Font &Quality",                                         IDM_SETTING_FONTQUALITY_GROUP
         BEGIN
             MENUITEM "&None",                                          IDM_VIEW_FONTQUALITY_NONE
             MENUITEM "&Standard",                                      IDM_VIEW_FONTQUALITY_STANDARD
             MENUITEM "&ClearType",                                     IDM_VIEW_FONTQUALITY_CLEARTYPE
         END
-        POPUP "Ren&dering Technology",                                 IDM_SETTING_RENDER
+        POPUP "Ren&dering Technology",                                 IDM_SETTING_RENDER_GROUP
         BEGIN
-            MENUITEM "&Legacy GDI",                                    IDM_SET_RENDER_TECH_GDI
+            MENUITEM "Legacy &GDI",                                    IDM_SET_RENDER_TECH_GDI
             MENUITEM "&DirectWrite",                                   IDM_SET_RENDER_TECH_D2D
             MENUITEM "DirectWrite &Retain",                            IDM_SET_RENDER_TECH_D2DRETAIN
+            MENUITEM "DirectWrite GD&I DC",                            IDM_SET_RENDER_TECH_DC
+            MENUITEM "Direct&Write 1.1",                               IDM_SET_RENDER_TECH_D2D1_1
         END
         MENUITEM MF_SEPARATOR
-        POPUP "Custom Commands ...",                                   IDM_SET_PLACEHOLDE_CUSTOMIZED
+        POPUP "Custom Commands",                                       IDM_SET_PLACEHOLDE_CUSTOMIZED
         BEGIN
             MENUITEM "&Set Run Path",                                  IDM_SET_SETTINGS_CONFIG
             MENUITEM MF_SEPARATOR
         END
-        MENUITEM "Refresh Skylark ...",                                IDM_SET_RESET_CONFIG
+        MENUITEM "Refresh Skylark",                                    IDM_SET_RESET_CONFIG
         MENUITEM MF_SEPARATOR
+        MENUITEM "Files &Change Notification",                         IDM_SET_CHANGENOTIFY
         MENUITEM "Enable Runtime &Logging",                            IDM_SET_LOGGING_ENABLE
         MENUITEM MF_SEPARATOR
         MENUITEM "Files Interval [N] Seconds Auto-save",               IDM_FILE_SAVE_NOTIFY
@@ -478,8 +491,8 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "Donate Now",                                         IDM_DONATION
-        MENUITEM "Introduction &Of Editor ...",                        IDM_INTRODUTION
-        MENUITEM "Update &history ...",                                IDM_CHANGELOG
+        MENUITEM "Introduction &Of Editor",                            IDM_INTRODUTION
+        MENUITEM "Update &history",                                    IDM_CHANGELOG
         MENUITEM "&Command Line ...",                                  IDM_HELP_COMMAND
         MENUITEM "&About ...",                                         IDM_ABOUT
     END
@@ -896,6 +909,7 @@ BEGIN
             MENUITEM "mac-cyrillic",                        IDM_OTHER_2
             MENUITEM "mac-centraleurope",                   IDM_OTHER_3
             MENUITEM "Native Codepage",                     IDM_OTHER_ANSI
+            MENUITEM "Iconv Supports",                      IDM_OTHER_ICONV,,0x00000003
             MENUITEM "Binary Code",                         IDM_OTHER_BIN,,0x00000003
             MENUITEM "Plugins Code",                        IDM_OTHER_PLUGIN,,0x00000003
             MENUITEM "Unknown Code",                        IDM_UNKNOWN,,0x00000003
@@ -1091,7 +1105,7 @@ BEGIN
 END
 
 /////////////////////////////////////////////////////////////////////////////
-#define    __EU_COPYRIGHT_TRANSLATION    "Copyright © 2023 by ualy123"
+#define    __EU_COPYRIGHT_TRANSLATION    "Copyright © 2025 by ualy123"
 /////////////////////////////////////////////////////////////////////////////
 
 //
@@ -1237,7 +1251,7 @@ STRINGTABLE DISCARDABLE
 {
     IDS_BUTTON_R                     "R/0"
     IDS_BUTTON_W                     "R/W"
-    IDS_STATUS_F1                    "File Timestamp: %s"
+    IDS_STATUS_F1                    "%d File(s), Timestamp: %s"
     IDS_STATUS_XY                    "Cursor (Line %zu, Column %zu)"
     IDS_STATUS_LC                    "File: %zd/%zd (Byte)"
     IDS_STATUS_LD                    "Select: %zd/%zu (Tchars/Line)"
@@ -1269,7 +1283,7 @@ STRINGTABLE DISCARDABLE
     IDC_MSG_ATTACH_FAIL     "Failed to connect to remote file server"
     IDC_MSG_ATTACH_FAIL1    "Failed to connect to remote file server, wrong passphrase or invalid private file"
     IDC_MSG_ATTACH_FAIL2    "Failed to connect to remote file server, wrong user name or password"
-    IDC_MSG_ATTACH_FAIL3    "Error initializing libcurl, function entry may not be found"
+    IDC_MSG_ATTACH_FAIL3    "» » Error initializing libcurl, function entry may not be found"
     IDC_MSG_ATTACH_ERRORS   "Connection error: %s"
     IDC_MSG_ATTACH_SUCCESS  "Successful connection to remote file server"
     IDC_MSG_OPENSSL_FAIL    "Error initializing libopenssl, function entry may not be found"
@@ -1295,7 +1309,7 @@ STRINGTABLE DISCARDABLE
     IDC_MSG_TAB_LEN         "Enter tab width:"
     IDC_MSG_SCINTILLA_ERR1  "Failed to create scintilla control"
     IDC_MSG_ICONV_FAIL1     "File encoding conversion failed"
-    IDC_MSG_ICONV_FAIL2     "Text encoding error, cause the file is not open, please contact the developer"
+    IDC_MSG_ICONV_FAIL2     "Text encoding error, You need to specify the correct encoding through the command line"
     IDC_MSG_TABCONTROL_FAIL "Failed to create TabControl control"
     IDC_MSG_CONV_TIPS       "There may be a risk of content loss during multi byte encoding conversion, Do you want to continue? \
                             \nnote that the application of new encoding will not take effect until the file is saved."
@@ -1346,8 +1360,8 @@ STRINGTABLE DISCARDABLE
     IDC_MSG_REGIST_ERR34    "Cannot delete key in registry Drive\\shell\\skylark "
     IDC_MSG_REGIST_ERR35    "Cannot delete key in registry Drive\\shell\\skylark2 "
     IDC_MSG_REGIST_ERR36    "Cannot delete key in registry Drive\\shell\\skylark2 "
-    IDC_MSG_JUST_HELP       "Immediate help"
-    IDC_MSG_HELP_INF1       "Use the shortcut Ctrl+MouseLButtonClick to select multiple locations, support multi line input, delete, copy and other operations"
+    IDC_MSG_JUST_HELP       "Instant Help"
+    IDC_MSG_HELP_INF1       "Use Ctrl+MouseLButtonClick to select multiple locations, supports input, delete, copy and other operations\nSupports separator when pasting with multiple selections"
     IDC_MSG_EXEC_ERR1       "The process failed to start. Please check whether the process path is correct!"
     IDC_MSG_EDIT_ERR1       "Error creating edit control"
     IDC_MSG_SYMTREE_ERR1    "Error creating symbol tree control"
@@ -1474,7 +1488,7 @@ STRINGTABLE DISCARDABLE
     IDS_EDITOR_BCOMPARE     "Bcompare path: "
     IDS_THEME_TIPS1         "Tips: The editor font for this page is implemented by user scripts and does not follow the theme"
     IDS_THEME_TIPS2         "Tips: The foreground color of some keywords on this page is realized by user script and does not follow the theme"
-    IDS_RE_ERROR            "Error: invalid regular expression"
+    IDS_RE_ERROR            "» » Error: invalid regular expression"
     IDS_HEXVIEW_BYTES       "Number of bytes to insert (decimal): "
     IDS_RESULT_STR_TIPS     "The number of matches has exceeded 131071 times, If the search continues, It will take a lot of time, Is it terminated?\n"
     IDS_RESULT_STR_WARN     "» » Search '%s' keyword in '%s' file (more than %d hits, excess matches will not be shown)\n"
@@ -1514,6 +1528,26 @@ STRINGTABLE DISCARDABLE
     IDS_UNDO_UNCLOSE_TIPS   "The file has been converted to encoding or line breaks, You should save the file as soon as possible to avoid 'undo/redo' operations affecting the file state."
     IDS_HISTORY_CLEAR_UNDO  "This operation will clear the undo history, Affecting 'Undo/Redo', Continue?"
     IDS_MINMAP_DESC         "Document Map"
+    IDS_PRIFILES_WARNING    "Modifying configuration file may affect the stability of the editor, Continue?"
+    IDS_COLUMN_FILL_NONE    "None"
+    IDS_COLUMN_FILL_ZEROS   "Zeros"
+    IDS_COLUMN_FILL_SPACES  "Spaces"
+    IDS_WHICH_NONE          "» » no %s in PATH environment variable"
+    IDS_WHICH_EXIST         "» » %s"
+    IDS_NOT_SUPPORTED       "» » An unsupported operation"
+    IDS_SAVE_HOME           "» » The document is saved in the user's home directory"
+    IDS_CMDS_ERROR          "» » File open failed or empty file"
+    IDS_OPENAI_KEY_ERR      "» » Unknown API Key or URL"
+    IDS_OPENAI_FORMAT_ERR   "» » Request body format error"
+    IDS_OPENAI_AUTH_FAILD   "» » API Key authentication failed"
+    IDS_INSUFFICIENT_BAL    "» » Insufficient account balance"
+    IDS_OPENAI_PARAMETE_ERR "» » AI parameter error"
+    IDS_OPENAI_TMP_ERR      "» » The request rate has reached its maximum limit"
+    IDS_OPENAI_SERV_FAILURE "» » The server failure"
+    IDS_OPENAI_SERV_BUSY    "» » The server is busy"
+    IDS_OPENAI_SERV_THINK   "» » Thinking ..."
+    IDS_OPENAI_SERV_404     "» » Page not found, Please check the URL settings"
+    IDS_OPENAI_DATA_ERR     "» » Error, Data abort"
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1525,9 +1559,9 @@ STYLE WS_CAPTION|WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 BEGIN
   CONTROL "Find what: ",IDC_WHAT_STATIC_FIFOLDER,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,12,20,42,12
-  CONTROL "",IDC_WHAT_FOLDER_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN,54,20,207,13
+  CONTROL "",IDC_WHAT_FOLDER_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN|WS_VSCROLL,54,20,207,13
   CONTROL "Replace with: ",IDC_SEARCH_RP_STC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,2,36,48,12
-  CONTROL "",IDC_SEARCH_RP_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN,54,36,207,12
+  CONTROL "",IDC_SEARCH_RP_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN|WS_VSCROLL,54,36,207,12
   CONTROL "Filters: ",IDC_SEARCH_FY_STC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,12,36,42,12
   CONTROL "",IDC_SEARCH_FY_CBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_AUTOHSCROLL|CBS_DROPDOWN,54,36,207,12
   CONTROL "Directory: ",IDC_SEARCH_DIR_STC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,12,54,42,12
@@ -1641,4 +1675,29 @@ BEGIN
   CONTROL "Close",IDC_SNIPPET_BTN_CLOSE,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,411,275,54,15
   CONTROL "Apply",IDC_SNIPPET_BTN_APPLY,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,351,275,54,15
   CONTROL "New",IDC_SNIPPET_NEW,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,57,275,45,15
+END
+
+IDD_COLUMNEDIT_DLG DIALOGEX 6,6,213,177
+CAPTION "Column Editor"
+FONT 8,"MS Sans Serif",0,0,0
+STYLE WS_CAPTION|WS_SYSMENU|WS_VISIBLE
+EXSTYLE WS_EX_TOOLWINDOW
+BEGIN
+  CONTROL "Number to Insert",IDC_COL_NUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|SS_CENTERIMAGE,6,3,201,15
+  CONTROL "",IDC_COL_NUM_GRP_STATIC,"Button",WS_CHILDWINDOW|WS_VISIBLE|BS_GROUPBOX,3,18,204,130
+  CONTROL "Initial number :",IDC_COL_INITNUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,30,76,8
+  CONTROL "",IDC_COL_INITNUM_EDIT,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_NUMBER,90,30,38,12,WS_EX_CLIENTEDGE
+  CONTROL "Increase by :",IDC_COL_INCRNUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,46,75,8
+  CONTROL "",IDC_COL_INCREASENUM_EDIT,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_NUMBER,90,45,38,12,WS_EX_CLIENTEDGE
+  CONTROL "Repeat :",IDC_COL_REPEATNUM_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,63,75,8
+  CONTROL "",IDC_COL_REPEATNUM_EDIT,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_NUMBER,90,60,38,12,WS_EX_CLIENTEDGE
+  CONTROL "Leading :",IDC_COL_LEADING_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTERIMAGE,9,78,75,8
+  CONTROL "",IDC_COL_LEADING_COMBO,"ComboBox",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|CBS_DROPDOWNLIST,90,75,103,30
+  CONTROL "Format",IDC_COL_FORMAT_GRP_STATIC,"Button",WS_CHILDWINDOW|WS_VISIBLE|BS_CENTER|BS_GROUPBOX,10,96,184,44
+  CONTROL "&Dec",IDC_COL_DEC_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,21,105,70,10
+  CONTROL "&Hex",IDC_COL_HEX_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,117,105,70,10
+  CONTROL "&Oct",IDC_COL_OCT_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,21,120,70,10
+  CONTROL "&Bin",IDC_COL_BIN_RADIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTORADIOBUTTON,117,120,70,10
+  CONTROL "OK",IDOK,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|BS_DEFPUSHBUTTON,54,156,70,14
+  CONTROL "Cancel",IDCANCEL,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,137,156,70,14
 END

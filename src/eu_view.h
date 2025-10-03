@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,16 +21,18 @@
 
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define KEY_UP(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
-    
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int on_view_switch_type(eu_tabpage *p, const int type);
-int on_view_refresh_theme(HWND hwnd, const bool reload);
-int on_view_switch_theme(HWND hwnd, const int id);
+int on_view_refresh_theme(const HWND hwnd, const bool reload);
+int on_view_switch_theme(const HWND hwnd, const int id);
+int on_view_theme_loader(const HWND hwnd, const TCHAR *pbuf, const int id);
 int on_view_modify_theme(void);
 int on_view_editor_selection(eu_tabpage *pnode);
+void on_view_clear_indicator(eu_tabpage *pnode);
 void on_view_filetree(void);
 void on_view_split_tabbar(void);
 void on_view_symtree(eu_tabpage *pnode);
@@ -57,7 +59,8 @@ void on_view_zoom_reset(eu_tabpage *pnode);
 void on_view_setfullscreenimpl(HWND hwnd);
 void on_view_full_sreen(HWND hwnd);
 void on_view_font_quality(HWND hwnd, const int res_id);
-void on_view_enable_rendering(HWND hwnd, const int res_id);
+void on_view_enable_rendering(eu_tabpage *pnode, const int res_id);
+void on_view_tabs_sort(const int res_id);
 
 #ifdef __cplusplus
 }

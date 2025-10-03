@@ -41,6 +41,7 @@ AutoComplete::AutoComplete() :
 	ignoreCase(false),
 	chooseSingle(false),
 	options(AutoCompleteOption::Normal),
+	imageScale(1.0),
 	posStart(0),
 	startLen(0),
 	cancelAtStartPos(true),
@@ -73,7 +74,7 @@ void AutoComplete::Start(Window &parent, int ctrlID,
 	*/
 	lb->SetOptions(listOptions);
 	if (!active) {
-	    lb->Create(parent, ctrlID, location, lineHeight, unicodeMode, technology);
+		lb->Create(parent, ctrlID, location, lineHeight, unicodeMode, technology);
 	}
 	lb->Clear();
 	active = true;

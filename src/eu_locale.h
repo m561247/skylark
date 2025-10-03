@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,7 +97,8 @@ intptr_t i18n_dlgbox(HWND hwnd, int res_id, DLGPROC fn, LPARAM param);
 void i18n_update_multi_lang(HMENU root_menu);
 void i18n_update_menu(HMENU root_menu);
 bool i18n_reload_lang(void);
-int i18n_switch_locale(HWND hwnd, int id);
+int i18n_switch_locale(const HWND hwnd, const int id);
+int i18n_locale_loader(const HWND hwnd, const TCHAR *dll);
 
 #ifdef __cplusplus
 }

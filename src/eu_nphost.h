@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ int  np_plugins_savefile(const npp_funcs *pfunc, const NPP instance);
 int  np_plugins_savefileas(const npp_funcs *pfunc, const NPP instance, const wchar_t *path);
 void np_plugins_shutdown(HMODULE *hmod, npdata **plugin);
 void np_plugins_print(const npp_funcs *pfunc, const NPP instance, npprint *platform);
+void np_plugins_draw(const npp_funcs *pfunc, const NPP instance);
 HMODULE np_load_plugin_library(const TCHAR *filename, const bool sys);
 
 #ifdef __cplusplus

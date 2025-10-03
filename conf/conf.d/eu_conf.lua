@@ -8,6 +8,7 @@ function eu_conf.fill_actions(s)
         eu_core.ffi.fill(pconfig.m_actions, 100 * 260)
     else
         local actions_size = eu_core.ffi.sizeof(pconfig.m_actions)/260;
+        if (actions_size > 100) then actions_size = 100 end
         for i=0,actions_size-1 do
           if (process_actions[i] ~= nil and #process_actions[i] < 260) then
               eu_core.ffi.copy(pconfig.m_actions[i], process_actions[i])
@@ -28,7 +29,7 @@ function eu_conf.fill_customize(s)
                                  ['param'] = "", ['micon'] = 0, ['posid'] = 0, ['hbmp'] = 0}
         if (eu_core.euapi.eu_under_wine()) then
           process_customized[2].path = "calc"
-        elseif (eu_core.euapi.eu_which("win32calc.exe")) then
+        elseif (eu_core.euapi.eu_which("win32calc.exe", nil)) then
           process_customized[2].path = "%windir%/system32/win32calc.exe"
         else
           process_customized[2].path = "%windir%/system32/calc.exe"
@@ -73,7 +74,7 @@ function eu_conf.loadconf()
     local file = (eu_core.script_path() .. "\\skylark.conf")
     if (not eu_core.file_exists(file)) then
         local code = -- 默认配置文件
-        "-- if you edit the file, please keep the encoding correct(utf-8 nobom)\n" ..
+        "--[=[if you edit the file, please keep the encoding correct(utf-8 nobom)]=]\n" ..
         "newfile_eols = 2\n" ..
         "newfile_encoding = 10014\n" ..
         "enable_auto_identation = true\n" ..
@@ -85,9 +86,6 @@ function eu_conf.loadconf()
         "line_number_visiable = true\n" ..
         "last_search_flags = 0x000044\n" ..
         "history_mask = 44711\n" ..
-        "white_space_visiable = false\n" ..
-        "white_space_size = 2\n" ..
-        "newline_visiable = false\n" ..
         "indentation_guides_visiable = true\n" ..
         "tab_width = 4\n" ..
         "onkeydown_tab_convert_spaces = true\n" ..
@@ -97,7 +95,7 @@ function eu_conf.loadconf()
         "file_treebar_width = 253\n" ..
         "symbol_list_width = 210\n" ..
         "symbol_tree_width = 210\n" ..
-        "sidebar_width = 210\n" ..
+        "sidebar_width = 320\n" ..
         "sidebar_tree_width = 210\n" ..
         "document_map_width = 140\n" ..
         "sqlquery_result_edit_height = 80\n" ..
@@ -111,17 +109,18 @@ function eu_conf.loadconf()
         "inter_reserved_2 = 0\n" ..
         "block_fold_visiable = true\n" ..
         "tabs_tip_show_enable = true\n" ..
-        "code_hint_show_enable = true\n" ..
         "tab_split_show = false\n" ..
+        "code_hint_show_enable = 0x1190\n" ..
         "tab_close_way = 0\n" ..
         "tab_close_draw = 43004\n" ..
         "tab_new_way = 0\n" ..
         "tab_switch_forward = 42991\n" ..
         "edit_font_quality = 42552\n" ..
         "edit_rendering_technology = 42560\n" ..
-        "update_file_mask = 0\n" ..
+        "update_file_mask = 1\n" ..
         "update_file_notify = 0\n" ..
-        "doc_highlight_restrict = 0x1000000\n" ..
+        "doc_highlight_restrict = 0xc800000\n" ..
+        "set_undo_selection = false\n" ..
         "light_all_find_str = true\n" ..
         "backup_on_file_write = false\n" ..
         "save_last_session = true\n" ..
@@ -164,6 +163,14 @@ function eu_conf.loadconf()
         "    margin_right = 2000,\n" ..
         "    margin_bottom = 2000\n" ..
         "}\n" ..
+        "-- column editor default setting\n" ..
+        "columner = {\n" ..
+        "    initnum = 1024,\n" ..
+        "    increase = 1,\n" ..
+        "    repeater = 1,\n" ..
+        "    leading = 50216,\n" ..
+        "    format = 50203\n" ..
+        "}\n" ..
         "-- titlebar default setting\n" ..
         "titlebar = {\n" ..
         "    icon = true,\n" ..
@@ -190,8 +197,19 @@ function eu_conf.loadconf()
         "    flags = 0,\n" ..
         "    msg_id = 44054,\n" ..
         "    last_check = 0,\n" ..
-        "    url = 'https://sourceforge.net/projects/libportable/files/Skylark/update_info.txt/download',\n" ..
+        "    url = 'https://sourceforge.net/projects/libportable/files/Skylark/update_info.txt/download'\n" ..
         "}\n" ..
+        "app_openai = {\n" ..
+        "    think = true,\n" ..
+        "    stream = true,\n" ..
+        "    max_tokens = 0,\n" ..
+        "    key = '',\n" ..
+        "    model = 'deepseek-r1',\n" ..
+        "    base = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',\n" ..
+        "    setting = 'You are a helpful assistant.'\n" ..
+        "}\n" ..
+        "-- when a multiple selection is copied, this string property is added between each part\n" ..
+        "set_copy_separator = \"\\n\"\n" ..
         "-- uses the backslash ( / ) to separate directories in file path. default value: cmd.exe\n" ..
         "process_path = \"\"\n" ..
         "other_editor_path = \"\"\n" ..
@@ -214,15 +232,6 @@ function eu_conf.loadconf()
     if (sqlquery2_result_listview_height == nil) then
         sqlquery2_result_listview_height = 270
     end
-    if (titlebar == nil) then
-        titlebar = {["icon"] = true, ["name"] = true, ["path"] = true}
-    end
-    if (tab_split_show == nil) then
-        tab_split_show = false
-    end
-    if (doc_highlight_restrict == nil) then
-        doc_highlight_restrict = 0x1000000
-    end
     if (mstab == nil or mstab.s_copy == nil) then
         mstab = {["vertical"] = false, ["horizontal"] = false, ["splitting_copy"] = false,
                  ["main_show"] = false, ["slave_show"] = false, ["main_size"] = 0, ["slave_size"] = 0, ["reserved"] = 0}
@@ -239,9 +248,6 @@ function eu_conf.loadconf()
         line_number_visiable,
         last_search_flags,
         history_mask,
-        white_space_visiable,
-        white_space_size,
-        newline_visiable,
         indentation_guides_visiable,
         tab_width,
         onkeydown_tab_convert_spaces,
@@ -265,8 +271,8 @@ function eu_conf.loadconf()
         inter_reserved_2,
         block_fold_visiable,
         tabs_tip_show_enable,
-        code_hint_show_enable,
         tab_split_show,
+        code_hint_show_enable,
         tab_close_way,
         tab_close_draw,
         tab_new_way,
@@ -276,6 +282,7 @@ function eu_conf.loadconf()
         update_file_mask,
         update_file_notify,
         doc_highlight_restrict,
+        set_undo_selection,
         light_all_find_str,
         backup_on_file_write,
         save_last_session,
@@ -289,11 +296,14 @@ function eu_conf.loadconf()
         {calltip.enable, calltip.rgb},
         {complete.enable, complete.characters, complete.snippet},
         {printer.header, printer.footer, printer.color_mode, printer.zoom,{printer.margin_left, printer.margin_top, printer.margin_right, printer.margin_bottom}},
+        {columner.initnum, columner.increase, columner.repeater, columner.leading,columner.format},
         {titlebar.icon, titlebar.name, titlebar.path},
         {mstab.vertical, mstab.horizontal, mstab.splitting_copy, mstab.main_show, mstab.slave_show, mstab.main_size, mstab.slave_size, mstab.reserved, 0, 0},
         hyperlink_detection,
         cache_limit_size,
         {app_upgrade.enable, app_upgrade.flags, app_upgrade.msg_id, app_upgrade.last_check, app_upgrade.url},
+        {app_openai.think, app_openai.stream, app_openai.max_tokens, app_openai.key, app_openai.model, app_openai.base, app_openai.setting},
+        set_copy_separator,
         process_path,
         other_editor_path,
         m_reserved_0,

@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -220,7 +220,7 @@ share_send_msg(void *param, const size_t len)
     HWND hwnd = eu_module_hwnd();
     if (!hwnd)
     {   // 等待主窗口初始化
-        share_envent_wait(8000);
+        share_envent_wait(3000);
     }
     if ((hwnd = eu_module_hwnd()) != NULL)
     {

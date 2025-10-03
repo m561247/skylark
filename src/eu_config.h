@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ extern "C" {
 #endif
 
 void on_config_file_url(wchar_t *path, int len, const wchar_t *p);
+bool on_config_lua_run(const wchar_t *file, const char *parg);
+int  on_config_accel_loader(void);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -380,7 +380,7 @@ eu_refresh_interface(HMODULE new_lang, const TCHAR *lang_path)
     }
     else
     {
-        on_statusbar_size(NULL, false);
+        on_statusbar_size(NULL, NULL);
         if (on_dark_enable())
         {
             SendMessage(g_statusbar, WM_THEMECHANGED, 0, 0);
@@ -393,6 +393,7 @@ eu_refresh_interface(HMODULE new_lang, const TCHAR *lang_path)
     on_favorite_reload_root();
     on_search_dark_mode_release();
     on_snippet_destory();
+    on_column_destory();
     return 0;
 }
 
@@ -402,6 +403,7 @@ i18n_check_envent(void)
     bool ret = true;
     HWND snippet = NULL;
     HWND search = NULL;
+    HWND column = NULL;
     if ((snippet = eu_snippet_hwnd()) && IsWindowVisible(snippet))
     {
         ret = false;
@@ -410,18 +412,40 @@ i18n_check_envent(void)
     {
         ret = false;
     }
+    if (ret && (column = eu_column_hwnd()) && IsWindowVisible(column))
+    {
+        ret = false;
+    }
     return ret;
 }
 
 int
-i18n_switch_locale(HWND hwnd, int id)
+i18n_locale_loader(const HWND hwnd, const TCHAR *dll)
+{
+    HMODULE new_lang = NULL;
+    TCHAR lang_path[MAX_PATH] = {0};
+     /* 加载新语言文件并动态刷新界面 */
+    _sntprintf(lang_path, MAX_PATH-1, _T("%s\\locales\\%s"), eu_module_path, dll);
+    if ((new_lang = LoadLibraryEx(lang_path, NULL, LOAD_LIBRARY_AS_DATAFILE)) && eu_refresh_interface(new_lang, lang_path) == 0)
+    {
+        HMENU root_menu = GetMenu(hwnd);
+        HMENU menu_env = root_menu ? GetSubMenu(root_menu, LOCALE_MENU) : NULL;
+        on_tabpage_newdoc_reload();
+        i18n_update_multi_lang(menu_env);
+        i18n_update_menu(menu_env);
+        on_proc_redraw(NULL);
+        return 0;
+    }
+    return 1;
+}
+
+int
+i18n_switch_locale(const HWND hwnd, const int id)
 {
     int msg = IDOK;
     TCHAR buf[QW_SIZE] = {0};
     TCHAR old[QW_SIZE] = {0};
     TCHAR sel[QW_SIZE] = {0};
-    TCHAR lang_path[MAX_PATH] = {0};
-    HMODULE new_lang = NULL;
     if (!GetMenuString(GetMenu(hwnd), id, buf, QW_SIZE, MF_BYCOMMAND))
     {
         return 1;
@@ -450,21 +474,5 @@ i18n_switch_locale(HWND hwnd, int id)
     {
         return 0;
     }
-     /* 加载新语言文件并动态刷新界面 */
-    _sntprintf(lang_path, MAX_PATH-1, _T("%s\\locales\\%s"), eu_module_path, sel);
-    new_lang = LoadLibraryEx(lang_path, NULL, LOAD_LIBRARY_AS_DATAFILE);
-    if (!new_lang)
-    {
-        return 1;
-    }
-    if (eu_refresh_interface(new_lang, lang_path) == 0)
-    {
-        HMENU root_menu = GetMenu(hwnd);
-        HMENU menu_env = root_menu ? GetSubMenu(root_menu, LOCALE_MENU) : NULL;
-        on_tabpage_newdoc_reload();
-        i18n_update_multi_lang(menu_env);
-        i18n_update_menu(menu_env);
-        on_proc_redraw(NULL);
-    }
-    return 0;
+    return i18n_locale_loader(hwnd, sel);
 }

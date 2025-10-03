@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,17 +30,17 @@ on_hint_reload(const char **pbuf, const int tab_width)
         // 设置一个页边缩进
         on_sci_set_margin(phint);
         // 回车符
-        eu_sci_call(phint, SCI_SETEOLMODE, phint->eol, 0);
+        on_sci_call(phint, SCI_SETEOLMODE, phint->eol, 0);
         // tab
-        eu_sci_call(phint, SCI_SETTABWIDTH, (sptr_t)tab_width, 0);
+        on_sci_call(phint, SCI_SETTABWIDTH, (sptr_t)tab_width, 0);
         // 不显示插入符
-        eu_sci_call(phint, SCI_SETCARETSTYLE, CARETSTYLE_INVISIBLE, 0);
+        on_sci_call(phint, SCI_SETCARETSTYLE, CARETSTYLE_INVISIBLE, 0);
         // 设置缩放级别
-        eu_sci_call(phint, SCI_SETZOOM, phint->zoom_level, 0);
+        on_sci_call(phint, SCI_SETZOOM, phint->zoom_level, 0);
         // 插入缓冲区代码
         for (size_t i = 0; i < cvector_size(pbuf); ++i)
         {
-            eu_sci_call(phint, SCI_ADDTEXT, strlen(pbuf[i]), (LPARAM)(pbuf[i]));
+            on_sci_call(phint, SCI_ADDTEXT, strlen(pbuf[i]), (LPARAM)(pbuf[i]));
         }
     }
 }
@@ -104,8 +104,8 @@ on_hint_create(const HWND parent)
     if (!phint && (phint = (eu_tabpage *)calloc(1, sizeof(eu_tabpage))))
     {
         const TCHAR *class_name = _T("Code Hint");
-        phint->reserved0 = (intptr_t)on_splitter_init_window(parent, class_name, WS_CHILD | WS_CLIPSIBLINGS, NULL, on_hint_callback, NULL);
-        return phint->reserved0 != 0;
+        phint->hwnd_pop = on_splitter_init_window(parent, class_name, WS_CHILD | WS_CLIPSIBLINGS, NULL, on_hint_callback, NULL);
+        return phint->hwnd_pop != NULL;
     }
     return false;
 }
@@ -113,9 +113,9 @@ on_hint_create(const HWND parent)
 HWND
 on_hint_hwnd(void)
 {
-    if (phint && phint->reserved0)
+    if (phint && phint->hwnd_pop)
     {
-        return ((HWND)phint->reserved0);
+        return (phint->hwnd_pop);
     }
     return NULL;
 }
@@ -123,9 +123,9 @@ on_hint_hwnd(void)
 void
 on_hint_hide(const POINT *pt)
 {
-    if (pt && phint && phint->reserved0 && phint->hwnd_sc && code_hint_initialized && !PtInRect(&phint->rect_sc, *pt))
+    if (pt && phint && phint->hwnd_pop && phint->hwnd_sc && code_hint_initialized && !PtInRect(&phint->rect_sc, *pt))
     {
-        DestroyWindow((HWND)phint->reserved0);
+        DestroyWindow(phint->hwnd_pop);
         _InterlockedExchange(&code_hint_initialized, 0);
     }
 }
@@ -145,9 +145,9 @@ on_hint_launch(eu_tabpage *pnode, const RECT *prc, const char **pbuf, const int 
         long r1 = 0;
         long r2 = 0;
         int flags = WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_EX_RTLREADING;
-        const int tab_width = (const int)eu_sci_call(pnode, SCI_GETTABWIDTH, 0, 0);
-        const sptr_t font_width = eu_sci_call(pnode, SCI_TEXTWIDTH, STYLE_DEFAULT, (sptr_t)"X");
-        const sptr_t font_hight = eu_sci_call(pnode, SCI_TEXTHEIGHT, 0, 0);
+        const int tab_width = (const int)on_sci_call(pnode, SCI_GETTABWIDTH, 0, 0);
+        const sptr_t font_width = on_sci_call(pnode, SCI_TEXTWIDTH, STYLE_DEFAULT, (sptr_t)"X");
+        const sptr_t font_hight = on_sci_call(pnode, SCI_TEXTHEIGHT, 0, 0);
         memcpy(&phint->rect_sc, prc, sizeof(RECT));
         phint->eol = pnode->eol;
         phint->zoom_level = pnode->zoom_level;
@@ -167,14 +167,14 @@ on_hint_launch(eu_tabpage *pnode, const RECT *prc, const char **pbuf, const int 
         }
         if (r1 < r2)
         {
-            rc.left = (long)(pnode->reserved1 > 0 ? pnode->reserved1 : rc.left);
+            rc.left = (long)(pnode->pointx > 0 ? pnode->pointx : rc.left);
         }
-        if (on_sci_create(phint, (HWND)phint->reserved0, flags, on_hint_code_proc) == SKYLARK_OK)
+        if (on_sci_create(phint, phint->hwnd_pop, flags, on_hint_code_proc) == SKYLARK_OK)
         {
             on_dark_border(phint->hwnd_sc, true);
             on_hint_reload(pbuf, tab_width);
         }
-        return SetWindowPos((HWND)phint->reserved0, HWND_TOP, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_SHOWWINDOW);
+        return SetWindowPos(phint->hwnd_pop, HWND_TOP, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_SHOWWINDOW);
     }
     return false;
 }

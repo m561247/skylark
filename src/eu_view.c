@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,21 +30,11 @@ on_view_symtree(eu_tabpage *pnode)
 {
     if (pnode && !TAB_HEX_MODE(pnode) && !pnode->pmod && pnode->doc_ptr && pnode->doc_ptr->fn_init_before)
     {   // 启用右侧边栏控件
-        if (pnode->doc_ptr->fn_reload_symlist)
+        if ((pnode->sym_show ^= true))
         {
-            if (pnode->hwnd_symlist || pnode->doc_ptr->fn_init_before(pnode) == SKYLARK_OK)
-            {
-                pnode->doc_ptr->fn_reload_symlist(pnode);
-            }
+            on_tabpage_symreload(pnode);
+            pnode->map_show = false;
         }
-        else if (pnode->doc_ptr->fn_reload_symtree)
-        {
-            if (pnode->hwnd_symtree || pnode->doc_ptr->fn_init_before(pnode) == SKYLARK_OK)
-            {
-                pnode->doc_ptr->fn_reload_symtree(pnode);     
-            }  
-        }
-        pnode->sym_show ^= true;
         eu_window_resize();
     }
 }
@@ -109,23 +99,20 @@ on_view_split_tabbar(void)
 void
 on_view_document_map(eu_tabpage *pnode)
 {
-    if (pnode && !TAB_HEX_MODE(pnode) && !pnode->plugin)
+    if (pnode && TAB_HAS_TXT(pnode))
     {
-        if ((pnode->map_show ^= true))
+        if ((pnode->map_show ^= true) && on_map_launch())
         {
-            if (!on_map_launch())
-            {
-                pnode->map_show = false; 
-            }
+            pnode->sym_show = false;
         }
-        on_proc_redraw(NULL);
+        eu_window_resize();
     }
 }
 
 void
 on_view_result_show(eu_tabpage *pnode, const int key)
 {
-    if (pnode && !TAB_HEX_MODE(pnode) && !pnode->pmod && pnode->doc_ptr && pnode->doc_ptr->fn_init_before && pnode->doc_ptr->fn_keydown)
+    if (pnode && TAB_HAS_TXT(pnode) && pnode->doc_ptr && pnode->doc_ptr->fn_keydown)
     {
         if (!pnode->result_show)
         {
@@ -133,14 +120,10 @@ on_view_result_show(eu_tabpage *pnode, const int key)
         }
         if (RESULT_SHOW(pnode))
         {
-            pnode->qrtable_show = true;
-            if (pnode->hwnd_qrtable || pnode->doc_ptr->fn_init_before(pnode) == SKYLARK_OK)
-            {
-                pnode->presult->pwant = on_toolbar_no_highlight;
-                on_result_reload(pnode->presult);
-                eu_window_resize();
-                pnode->doc_ptr->fn_keydown(pnode, VK_F5, key);
-            }
+            pnode->presult->pwant = on_toolbar_no_highlight;
+            on_result_lexer(pnode->presult);
+            eu_window_resize();
+            pnode->doc_ptr->fn_keydown(pnode, VK_F5, key);
         }
     }
 }
@@ -173,28 +156,28 @@ on_view_refresh_scroll(eu_tabpage *pnode)
     if (pnode)
     {
         bool h = false;
-        bool v = (bool)eu_sci_call(pnode, SCI_GETVSCROLLBAR, 0, 0);
+        bool v = (bool)on_sci_call(pnode, SCI_GETVSCROLLBAR, 0, 0);
         if (v)
         {
-            eu_sci_call(pnode, SCI_SETVSCROLLBAR, 0, 0);
-            eu_sci_call(pnode, SCI_SETVSCROLLBAR, v, 0);
+            on_sci_call(pnode, SCI_SETVSCROLLBAR, 0, 0);
+            on_sci_call(pnode, SCI_SETVSCROLLBAR, v, 0);
         }
-        if ((h = (bool)eu_sci_call(pnode, SCI_GETHSCROLLBAR, 0, 0)))
+        if ((h = (bool)on_sci_call(pnode, SCI_GETHSCROLLBAR, 0, 0)))
         {
-            eu_sci_call(pnode, SCI_SETHSCROLLBAR, 0, 0);
-            eu_sci_call(pnode, SCI_SETHSCROLLBAR, h, 0);
+            on_sci_call(pnode, SCI_SETHSCROLLBAR, 0, 0);
+            on_sci_call(pnode, SCI_SETHSCROLLBAR, h, 0);
         }
         if (RESULT_SHOW(pnode))
         {
-            if ((v = (bool)eu_sci_call(pnode->presult, SCI_GETVSCROLLBAR, 0, 0)))
+            if ((v = (bool)on_sci_call(pnode->presult, SCI_GETVSCROLLBAR, 0, 0)))
             {
-                eu_sci_call(pnode->presult, SCI_SETVSCROLLBAR, 0, 0);
-                eu_sci_call(pnode->presult, SCI_SETVSCROLLBAR, v, 0);
+                on_sci_call(pnode->presult, SCI_SETVSCROLLBAR, 0, 0);
+                on_sci_call(pnode->presult, SCI_SETVSCROLLBAR, v, 0);
             }
-            if ((h = (bool)eu_sci_call(pnode->presult, SCI_GETHSCROLLBAR, 0, 0)))
+            if ((h = (bool)on_sci_call(pnode->presult, SCI_GETHSCROLLBAR, 0, 0)))
             {
-                eu_sci_call(pnode->presult, SCI_SETHSCROLLBAR, 0, 0);
-                eu_sci_call(pnode->presult, SCI_SETHSCROLLBAR, h, 0);
+                on_sci_call(pnode->presult, SCI_SETHSCROLLBAR, 0, 0);
+                on_sci_call(pnode->presult, SCI_SETHSCROLLBAR, h, 0);
             }
         }
     }
@@ -240,13 +223,13 @@ on_view_refresh_theme(HWND hwnd, const bool reload)
                 on_symtree_update_theme(p);
                 InvalidateRect(p->hwnd_symtree, NULL, true);
             }
-            if (p->presult && p->presult->reserved0)
-            {
-                SendMessage((HWND)p->presult->reserved0, WM_THEMECHANGED, (WPARAM)p, 0);
-            }
             if (p->hwnd_qrtable)
             {
                 on_table_update_theme(p);
+            }
+            if (RESULT_SHOW(p))
+            {
+                on_result_lexer(p->presult);
             }
             if (p->pmod)
             {
@@ -278,8 +261,8 @@ on_view_refresh_theme(HWND hwnd, const bool reload)
     if (reload)
     {
         menu_bmp_destroy();
-        InvalidateRect(on_toolbar_hwnd(), NULL, false);
-        util_tips_dark();
+        on_view_refresh_scroll(p);
+        on_toolbar_redraw(hwnd);
         on_splitter_redraw();
         on_proc_redraw(NULL);
         UpdateWindowEx(hwnd);
@@ -288,7 +271,33 @@ on_view_refresh_theme(HWND hwnd, const bool reload)
 }
 
 int
-on_view_switch_theme(HWND hwnd, const int id)
+on_view_theme_loader(const HWND hwnd, const TCHAR *pbuf, const int id)
+{
+    if (on_theme_load_script(pbuf))
+    {
+        eu_logmsg("View: %s, on_theme_load_script return false\n", __FUNCTION__);
+        return EUE_LOAD_SCRIPT_ERR;
+    }
+    if (!id || strncpy(eu_get_config()->window_theme, eu_get_theme()->name, QW_SIZE))
+    {
+        on_dark_delete_brush();
+    }
+    if (_tcscmp(pbuf, _T("black")) == 0)
+    {
+        if (eu_dark_theme_init(true, true))
+        {
+            SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_NORMAL, 10, 0);
+        }
+    }
+    else
+    {
+        eu_dark_theme_release(false);
+    }
+    return on_view_refresh_theme(hwnd, true);
+}
+
+int
+on_view_switch_theme(const HWND hwnd, const int id)
 {
     int count = 0;
     HFONT hfont = NULL;
@@ -312,27 +321,7 @@ on_view_switch_theme(HWND hwnd, const int id)
     {
         return 0;
     }
-    if (on_theme_load_script(pbuf))
-    {
-        eu_logmsg("%s: on_theme_load_script return false\n", __FUNCTION__);
-        return 1;
-    }
-    if (strncpy(eu_get_config()->window_theme, eu_get_theme()->name, QW_SIZE))
-    {
-        on_dark_delete_brush();
-    }
-    if (_tcscmp(pbuf, _T("black")) == 0)
-    {
-        if (eu_dark_theme_init(true, true))
-        {
-            SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_NORMAL, 10, 0);
-        }
-    }
-    else
-    {
-        eu_dark_theme_release(false);
-    }
-    return on_view_refresh_theme(hwnd, true);
+    return on_view_theme_loader(hwnd, pbuf, id);
 }
 
 int
@@ -343,7 +332,7 @@ on_view_modify_theme(void)
         HWND hwnd = eu_module_hwnd();
         if (hwnd && !on_theme_setup_font(hwnd))
         {
-            eu_logmsg("%s: on_theme_setup_font failed\n", __FUNCTION__);
+            eu_logmsg("View: %s, on_theme_setup_font failed\n", __FUNCTION__);
             return 1;
         }
         return on_view_refresh_theme(hwnd, false);
@@ -425,15 +414,16 @@ on_view_tab_width(HWND hwnd, eu_tabpage *pnode)
                     {
                         if (p->doc_ptr)
                         {
-                            eu_sci_call(p, SCI_SETTABWIDTH, p->doc_ptr->tab_width > 0 ? p->doc_ptr->tab_width : eu_get_config()->tab_width, 0);
+                            on_sci_call(p, SCI_SETTABWIDTH, p->doc_ptr->tab_width > 0 ? p->doc_ptr->tab_width : eu_get_config()->tab_width, 0);
                         }
                         else
                         {
-                            eu_sci_call(p, SCI_SETTABWIDTH, eu_get_config()->tab_width, 0);
+                            on_sci_call(p, SCI_SETTABWIDTH, eu_get_config()->tab_width, 0);
                         }
                     }
                 }
             }
+
         }
     }
 }
@@ -461,15 +451,16 @@ on_view_space_converter(HWND hwnd, eu_tabpage *pnode)
             {
                 if (p->doc_ptr)
                 {
-                    eu_sci_call(p, SCI_SETUSETABS, p->doc_ptr->tab_convert_spaces >= 0 ? !p->doc_ptr->tab_convert_spaces : !eu_get_config()->tab2spaces, 0);
+                    on_sci_call(p, SCI_SETUSETABS, p->doc_ptr->tab_convert_spaces >= 0 ? !p->doc_ptr->tab_convert_spaces : !eu_get_config()->tab2spaces, 0);
                 }
                 else
                 {
-                    eu_sci_call(p, SCI_SETUSETABS, !eu_get_config()->tab2spaces, 0);
+                    on_sci_call(p, SCI_SETUSETABS, !eu_get_config()->tab2spaces, 0);
                 }
             }
         }
     }
+
 }
 
 void
@@ -480,7 +471,7 @@ on_view_light_brace(eu_tabpage *p)
         eu_get_config()->eu_brace.matching ^= true;
         if (!eu_get_config()->eu_brace.matching)
         {   // 取消括号匹配
-            eu_sci_call(p, SCI_BRACEBADLIGHT, INVALID_POSITION, INVALID_POSITION);
+            on_sci_call(p, SCI_BRACEBADLIGHT, INVALID_POSITION, INVALID_POSITION);
         }
     }
 }
@@ -493,7 +484,7 @@ on_view_light_str(eu_tabpage *p)
         eu_get_config()->m_light_str ^= true;
         if (!eu_get_config()->m_light_str)
         {   // 取消指示器高亮
-            eu_sci_call(p, SCI_INDICATORCLEARRANGE, 0, eu_sci_call(p, SCI_GETLENGTH, 0, 0));
+            on_sci_call(p, SCI_INDICATORCLEARRANGE, 0, on_sci_call(p, SCI_GETLENGTH, 0, 0));
         }
     }
 }
@@ -510,7 +501,7 @@ on_view_light_fold(void)
         {
             if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
             {   // 是否高亮显示当前折叠块
-                eu_sci_call(p, SCI_MARKERENABLEHIGHLIGHT, (sptr_t) eu_get_config()->light_fold, 0);
+                on_sci_call(p, SCI_MARKERENABLEHIGHLIGHT, (sptr_t) eu_get_config()->light_fold, 0);
             }
         }
     }
@@ -528,7 +519,7 @@ on_view_wrap_line(void)
         {
             if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
             {
-                eu_sci_call(p, SCI_SETWRAPMODE, (eu_get_config()->line_mode ? 2 : 0), 0);
+                on_sci_call(p, SCI_SETWRAPMODE, (eu_get_config()->line_mode ? 2 : 0), 0);
             }
         }
     }
@@ -546,7 +537,7 @@ on_view_line_num(void)
         {
             if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
             {
-                eu_sci_call(p, SCI_SETMARGINWIDTHN, MARGIN_LINENUMBER_INDEX, (eu_get_config()->m_linenumber ? MARGIN_LINENUMBER_WIDTH : 0));
+                on_sci_call(p, SCI_SETMARGINWIDTHN, MARGIN_LINENUMBER_INDEX, (eu_get_config()->m_linenumber ? MARGIN_LINENUMBER_WIDTH : 0));
             }
         }
     }
@@ -564,11 +555,12 @@ on_view_bookmark(void)
         {
             if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
             {
-                eu_sci_call(p, SCI_SETMARGINWIDTHN, MARGIN_BOOKMARK_INDEX, (eu_get_config()->eu_bookmark.visable ? MARGIN_BOOKMARK_WIDTH : 0));
+                on_sci_call(p, SCI_SETMARGINWIDTHN, MARGIN_BOOKMARK_INDEX, (eu_get_config()->eu_bookmark.visable ? MARGIN_BOOKMARK_WIDTH : 0));
             }
         }
     }
 }
+
 
 static void
 on_view_update_fold(void)
@@ -581,7 +573,7 @@ on_view_update_fold(void)
         {
             if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p) && p->doc_ptr && p->foldline)
             {
-                eu_sci_call(p, SCI_SETMARGINWIDTHN, MARGIN_FOLD_INDEX, eu_get_config()->block_fold ? MARGIN_FOLD_WIDTH : 0);
+                on_sci_call(p, SCI_SETMARGINWIDTHN, MARGIN_FOLD_INDEX, eu_get_config()->block_fold ? MARGIN_FOLD_WIDTH : 0);
             }
         }
     }
@@ -606,14 +598,16 @@ on_view_white_space(void)
 {
     eu_tabpage *p = NULL;
     HWND htab[2] = {HMAIN_GET, HMAIN_SHOW ? HSLAVE_GET : NULL};
-    eu_get_config()->ws_visiable ^= true;
+    eu_get_theme()->item.whitechar.bold &= 0x3;
+    eu_get_theme()->item.whitechar.bold ^= BREAK_SHOW;
+    const bool visiable = (const bool)(eu_get_theme()->item.whitechar.bold & BREAK_SHOW);
     for (int k = 0; k < 2 && htab[k]; ++k)
     {
         for (int index = 0, count = TabCtrl_GetItemCount(htab[k]); index < count; ++index)
         {
-            if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
+            if ((p = on_tabpage_get_ptr(htab[k], index)) && !TAB_HEX_MODE(p) && !p->pmod)
             {
-                eu_sci_call(p, SCI_SETVIEWWS, (eu_get_config()->ws_visiable == true ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE), 0);
+                on_sci_call(p, SCI_SETVIEWEOL, visiable, 0);
             }
         }
     }
@@ -624,14 +618,16 @@ on_view_line_visiable(void)
 {
     eu_tabpage *p = NULL;
     HWND htab[2] = {HMAIN_GET, HMAIN_SHOW ? HSLAVE_GET : NULL};
-    eu_get_config()->newline_visialbe ^= true;
+    eu_get_theme()->item.whitechar.bold &= 0x3;
+    eu_get_theme()->item.whitechar.bold ^= BREAK_SHOW;
+    const bool visiable = (const bool)(eu_get_theme()->item.whitechar.bold & BREAK_SHOW);
     for (int k = 0; k < 2 && htab[k]; ++k)
     {
         for (int index = 0, count = TabCtrl_GetItemCount(htab[k]); index < count; ++index)
         {
-            if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
+            if ((p = on_tabpage_get_ptr(htab[k], index)) && !TAB_HEX_MODE(p) && !p->pmod)
             {
-                eu_sci_call(p, SCI_SETVIEWEOL, eu_get_config()->newline_visialbe, 0);
+                on_sci_call(p, SCI_SETVIEWEOL, visiable, 0);
             }
         }
     }
@@ -642,14 +638,14 @@ on_view_indent_visiable(void)
 {
     eu_tabpage *p = NULL;
     HWND htab[2] = {HMAIN_GET, HMAIN_SHOW ? HSLAVE_GET : NULL};
-    eu_get_config()->m_indentation ^= true;
+    eu_get_config()->alignedge ^= true;
     for (int k = 0; k < 2 && htab[k]; ++k)
     {
         for (int index = 0, count = TabCtrl_GetItemCount(htab[k]); index < count; ++index)
         {
             if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
             {
-                eu_sci_call(p, SCI_SETINDENTATIONGUIDES, (eu_get_config()->m_indentation ? SC_IV_LOOKBOTH : SC_IV_NONE), 0);
+                on_sci_call(p, SCI_SETINDENTATIONGUIDES, (eu_get_config()->alignedge ? SC_IV_LOOKBOTH : SC_IV_NONE), 0);
             }
         }
     }
@@ -674,7 +670,7 @@ on_view_history_visiable(eu_tabpage *pnode, const int wm_id)
                 if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
                 {   // 先给出提示
                     if (maskn > 1 && history_mask - IDM_VIEW_HISTORY_PLACEHOLDE == 1 &&
-                       (eu_sci_call(p, SCI_CANUNDO, 0, 0) || eu_sci_call(p, SCI_CANREDO, 0, 0)))
+                       (on_sci_call(p, SCI_CANUNDO, 0, 0) || on_sci_call(p, SCI_CANREDO, 0, 0)))
                     {
                         if (!affected)
                         {
@@ -683,7 +679,7 @@ on_view_history_visiable(eu_tabpage *pnode, const int wm_id)
                         }
                         if (result == IDOK)
                         {
-                            eu_sci_call(p, SCI_EMPTYUNDOBUFFER, 0, 0);
+                            on_sci_call(p, SCI_EMPTYUNDOBUFFER, 0, 0);
                             p == pnode ? on_toolbar_update_button(pnode) : (void)0;
                         }
                     }
@@ -719,7 +715,7 @@ on_view_zoom_out(eu_tabpage *pnode)
         }
         else
         {
-            eu_sci_call(pnode, SCI_ZOOMOUT, 0, 0);
+            on_sci_call(pnode, SCI_ZOOMOUT, 0, 0);
             on_sci_update_line_margin(pnode);
             on_sci_update_fold_margin(pnode);
         }
@@ -737,7 +733,7 @@ on_view_zoom_in(eu_tabpage *pnode)
         }
         else
         {
-            eu_sci_call(pnode, SCI_ZOOMIN, 0, 0);
+            on_sci_call(pnode, SCI_ZOOMIN, 0, 0);
             on_sci_update_line_margin(pnode);
             on_sci_update_fold_margin(pnode);
         }
@@ -755,7 +751,7 @@ on_view_zoom_reset(eu_tabpage *pnode)
         }
         else
         {
-            eu_sci_call(pnode, SCI_SETZOOM, 0, 0);
+            on_sci_call(pnode, SCI_SETZOOM, 0, 0);
             on_sci_update_line_margin(pnode);
             pnode->zoom_level = 0;
             on_sci_update_fold_margin(pnode);
@@ -763,48 +759,59 @@ on_view_zoom_reset(eu_tabpage *pnode)
     }
 }
 
+void
+on_view_clear_indicator(eu_tabpage *pnode)
+{
+    if (pnode && TAB_HAS_TXT(pnode) && pnode->match_count > 0)
+    {
+        sptr_t total_len = on_sci_call(pnode, SCI_GETLENGTH, 0, 0);
+        if (total_len > 1)
+        {
+            on_sci_call(pnode, SCI_SETINDICATORCURRENT, INDIC_SKYLARK_SELECT, 0);
+            on_sci_call(pnode, SCI_INDICATORCLEARRANGE, 0, total_len);
+            pnode->match_count = 0;
+        }
+    }
+}
+
 int
 on_view_editor_selection(eu_tabpage *pnode)
 {
-    if (!pnode || TAB_HEX_MODE(pnode) || pnode->pmod)
+    if (pnode && TAB_HAS_TXT(pnode) && util_can_selections(pnode) && !on_sci_call(pnode, SCI_GETSELECTIONMODE, 0, 0) && !on_search_caller())
     {
-        return SKYLARK_OK;
-    }
-    if (KEY_UP(VK_LBUTTON))
-    {
-        return SKYLARK_OK;
-    }
-    size_t select_len = 0;
-    char *select_buf = util_strdup_select(pnode, &select_len, 0);
-    sptr_t total_len = eu_sci_call(pnode, SCI_GETLENGTH, 0, 0);
-    sptr_t sel_start = eu_sci_call(pnode, SCI_GETSELECTIONSTART, 0, 0);
-    eu_sci_call(pnode, SCI_SETINDICATORCURRENT, INDIC_SKYLARK_SELECT, 0);
-    eu_sci_call(pnode, SCI_INDICATORCLEARRANGE, 0, total_len);
-    pnode->match_count = 0;
-    if (select_buf)
-    {
-        sptr_t start_pos = 0;
-        sptr_t found_pos = 0;
-        size_t flags = SCFIND_MATCHCASE;
-        sptr_t end_pos = total_len;
-        if (eu_get_config() && eu_get_config()->last_flags & SCFIND_WHOLEWORD)
+        size_t select_len = 0;
+        char *select_buf = util_strdup_select(pnode, &select_len, 0);
+        if (select_buf && select_len > 0 && !util_string_space(select_buf, select_len))
         {
-            flags |= SCFIND_WHOLEWORD;
-        }
-        while (found_pos >= 0)
-        {
-            found_pos = on_search_process_find(pnode, select_buf, start_pos, end_pos, flags);
-            if (found_pos >= 0)
+            size_t flags = 0;
+            sptr_t found_pos = 0;
+            const sptr_t sel_start = on_sci_call(pnode, SCI_GETSELECTIONSTART, 0, 0);
+            const sptr_t start_line = on_sci_call(pnode, SCI_DOCLINEFROMVISIBLE, (on_sci_call(pnode, SCI_GETFIRSTVISIBLELINE, 0, 0)), 0);
+            const sptr_t end_line = min(start_line + on_sci_call(pnode, SCI_LINESONSCREEN, 0, 0), on_sci_call(pnode, SCI_GETLINECOUNT, 0, 0) - 1);
+            const sptr_t end_pos = on_sci_call(pnode, SCI_GETLINEENDPOSITION, end_line, 0);
+            sptr_t start_pos = on_sci_call(pnode, SCI_POSITIONFROMLINE, start_line, 0);
+            on_sci_call(pnode, SCI_SETINDICATORCURRENT, INDIC_SKYLARK_SELECT, 0);
+            on_sci_call(pnode, SCI_INDICATORCLEARRANGE, start_pos, end_pos);
+            if (eu_get_config())
             {
-                if (found_pos != sel_start)
+                flags = eu_get_config()->last_flags & 0x1FFFFF;
+                pnode->match_count = 0;
+            }
+            while (found_pos >= 0)
+            {
+                if ((found_pos = on_search_process_find(pnode, select_buf, start_pos, end_pos, flags)) >= 0)
                 {
-                    eu_sci_call(pnode, SCI_INDICATORFILLRANGE, found_pos, select_len);
+                    on_sci_call(pnode, SCI_INDICATORCLEARRANGE, start_pos, end_pos - start_pos);
+                    if (found_pos != sel_start)
+                    {
+                        on_sci_call(pnode, SCI_INDICATORFILLRANGE, found_pos, select_len);
+                    }
+                    start_pos = found_pos+select_len;
+                    ++pnode->match_count;
                 }
-                start_pos = found_pos+select_len;
-                ++pnode->match_count;
             }
         }
-        free(select_buf);
+        eu_safe_free(select_buf);
     }
     return SKYLARK_OK;
 }
@@ -921,7 +928,7 @@ on_view_font_quality(HWND hwnd, const int res_id)
         eu_get_config()->m_quality = res_id;
         if (!on_theme_setup_font(hwnd))
         {
-            eu_logmsg("%s: on_theme_setup_font return false\n", __FUNCTION__);
+            eu_logmsg("View: %s, on_theme_setup_font return false\n", __FUNCTION__);
             eu_get_config()->m_quality = old_id;
         }
         else 
@@ -939,30 +946,117 @@ on_view_font_quality(HWND hwnd, const int res_id)
                     }
                 }
             }
+
             eu_window_resize();
         }
     }
 }
 
 void
-on_view_enable_rendering(HWND hwnd, const int res_id)
+on_view_enable_rendering(eu_tabpage *pnode, const int res_id)
 {
-    if (!util_under_wine() && eu_get_config()->m_render != res_id)
+    if (!util_under_wine())
     {
-        eu_tabpage *p = NULL;
-        HWND htab[2] = {HMAIN_GET, HMAIN_SHOW ? HSLAVE_GET : NULL};
-        eu_get_config()->m_render = res_id;
-        for (int k = 0; k < 2 && htab[k]; ++k)
+        const int render = (int)on_sci_call(pnode, SCI_GETTECHNOLOGY, 0, 0) + IDM_SET_RENDER_TECH_GDI;
+        if (render != res_id)
         {
-            for (int index = 0, count = TabCtrl_GetItemCount(htab[k]); index < count; ++index)
+            eu_tabpage *p = NULL;
+            HWND htab[2] = {HMAIN_GET, HMAIN_SHOW ? HSLAVE_GET : NULL};
+            eu_get_config()->m_render = (int)res_id;
+            for (int k = 0; k < 2 && htab[k]; ++k)
             {
-                if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
+                for (int index = 0, count = TabCtrl_GetItemCount(htab[k]); index < count; ++index)
                 {
-                    on_sci_init_style(p);
-                    on_sci_after_file(p, false);
+                    if ((p = on_tabpage_get_ptr(htab[k], index)) && TAB_HAS_TXT(p))
+                    {
+                        on_sci_init_style(p);
+                        on_sci_after_file(p, false);
+                    }
+                }
+            }
+            eu_window_resize();
+        }
+    }
+}
+
+void
+on_view_tabs_sort(const int id)
+{
+    HWND htab[2] = {HMAIN_GET, HSLAVE_SHOW ? HSLAVE_GET : NULL};
+    for (int k = 0; k < 2 && htab[k]; ++k)
+    {
+        int count = TabCtrl_GetItemCount(htab[k]);
+        if (count > 1)
+        {
+            int index = 0;
+            eu_tabpage *p = NULL;
+            eu_tabpage *pm = NULL, *pk = NULL;
+            for (; index < count; ++index)
+            {
+                if ((p = on_tabpage_get_ptr(htab[k], index)))
+                {
+                    p->tab_id = index;
+                    p->tab_focus = (int)(p->tab_id == TabCtrl_GetCurSel(htab[k]));
+                    on_sci_update_filesize(p);
+                }
+            }
+            for (index = 0; index < count; ++index)
+            {
+                if ((p = on_tabpage_get_ptr(htab[k], index)))
+                {
+                    pm = p;
+                    for (int j = index + 1; k < count; ++j)
+                    {
+                        if ((pk = on_tabpage_get_ptr(htab[k], j)))
+                        {
+                            bool fn = false;
+                            switch (id)
+                            {
+                                case IDM_VIEW_TABS_NAME_ASCEND:
+                                    fn = _tcsicmp(pk->filename, pm->filename) < 0;
+                                    break;
+                                case IDM_VIEW_TABS_NAME_ADESCEND:
+                                    fn = _tcsicmp(pk->filename, pm->filename) > 0;
+                                    break;
+                                case IDM_VIEW_TABS_TYPE_ASCEND:
+                                    fn = _tcsicmp(pk->extname, pm->extname) < 0;
+                                    break;
+                                case IDM_VIEW_TABS_TYPE_ADESCEND:
+                                    fn = _tcsicmp(pk->extname, pm->extname) > 0;
+                                    break;
+                                case IDM_VIEW_TABS_SIZE_ASCEND:
+                                    fn = pk->raw_size < pm->raw_size;
+                                    break;
+                                case IDM_VIEW_TABS_SIZE_ADESCEND:
+                                    fn = pk->raw_size > pm->raw_size;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            if (fn)
+                            {
+                                pm = pk;
+                            }
+                        }
+                    }
+                    if (pm != p)
+                    {
+                    #if APP_DEBUG
+                        printf("pm->tab_id = %d, pm->filename = %s, p->tab_id = %d, p->filename = %s\n", pm->tab_id, eu_utf16_mbcs(-1, pm->filename, NULL), p->tab_id, eu_utf16_mbcs(-1, p->filename, NULL));
+                    #endif
+                        on_tabpage_swap_item(htab[k], pm->tab_id, p->tab_id);
+                        UTIL_SWAP(int, pm->tab_id, p->tab_id);
+                    }
+                }
+            }
+            for (index = 0; index < count; ++index)
+            {
+                if ((p = on_tabpage_get_ptr(htab[k], index)) && p->tab_focus > 0)
+                {
+                    on_tabpage_select_index(htab[k], index);
+                    break;
                 }
             }
         }
-        eu_window_resize();
     }
 }

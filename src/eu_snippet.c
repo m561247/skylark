@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,34 +53,6 @@ on_snippet_edt_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR sub_id, 
     return DefSubclassProc(hwnd, msg, wp, lp);
 }
 
-static LRESULT CALLBACK
-on_snippet_cmb_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR sub_id, DWORD_PTR dw)
-{
-    switch(msg)
-    {
-        case WM_PAINT:
-        {
-            RECT rc;
-            if (!on_dark_enable())
-            {
-                break;
-            }
-            GetClientRect(hwnd, &rc);
-            PAINTSTRUCT ps;
-            const HDC hdc = BeginPaint(hwnd, &ps);
-            on_remotefs_draw_combo(hwnd, hdc, rc);
-            EndPaint(hwnd, &ps);
-            return 0;
-        }
-        case WM_NCDESTROY:
-            RemoveWindowSubclass(hwnd, on_snippet_cmb_proc, sub_id);
-            break;
-        default:
-            break;
-    }
-    return DefSubclassProc(hwnd, msg, wp, lp);
-}
-
 static void
 on_snippet_init_sci(eu_tabpage *pview)
 {
@@ -91,11 +63,11 @@ on_snippet_init_sci(eu_tabpage *pview)
         eu_i18n_load_str(IDS_SNIPPET_EXAMPLE_DEC, sc_str, MAX_BUFFER - 1);
         if ((u8_str = eu_utf16_utf8(sc_str, NULL)))
         {
-            eu_sci_call(pview, SCI_CLEARALL, 0, 0);
-            eu_sci_call(pview, SCI_ADDTEXT, strlen(u8_str), (sptr_t)u8_str);
+            on_sci_call(pview, SCI_CLEARALL, 0, 0);
+            on_sci_call(pview, SCI_ADDTEXT, strlen(u8_str), (sptr_t)u8_str);
             free(u8_str);
         }
-        eu_sci_call(pview, SCI_SETSAVEPOINT, 0, 0);
+        on_sci_call(pview, SCI_SETSAVEPOINT, 0, 0);
     }
 }
 
@@ -199,12 +171,12 @@ on_snippet_do_sci(const char *txt, bool sel)
         {
             if (strlen(txt) > 0)
             {
-                eu_sci_call(pview, SCI_CLEARALL, 0, 0);
-                eu_sci_call(pview, SCI_ADDTEXT, strlen(txt), (sptr_t)txt);
+                on_sci_call(pview, SCI_CLEARALL, 0, 0);
+                on_sci_call(pview, SCI_ADDTEXT, strlen(txt), (sptr_t)txt);
                 if (sel)
                 {
                     SetFocus(pview->hwnd_sc);
-                    eu_sci_call(pview, SCI_GOTOPOS, 0, 0);
+                    on_sci_call(pview, SCI_GOTOPOS, 0, 0);
                 }
             }
             else
@@ -214,9 +186,9 @@ on_snippet_do_sci(const char *txt, bool sel)
         }
         else
         {
-            eu_sci_call(pview, SCI_CLEARALL, 0, 0);
+            on_sci_call(pview, SCI_CLEARALL, 0, 0);
         }
-        eu_sci_call(pview, SCI_SETSAVEPOINT, 0, 0);
+        on_sci_call(pview, SCI_SETSAVEPOINT, 0, 0);
     }
 }
 
@@ -266,7 +238,7 @@ on_snippet_init_parser(const TCHAR *path, snippet_t **ptr_vec)
         eu_tabpage *pview = (eu_tabpage *)GetWindowLongPtr(hwnd_snippet, GWLP_USERDATA);
         if (pview)
         {
-            eu_sci_call(pview, SCI_SETEOLMODE, eol, 0);
+            on_sci_call(pview, SCI_SETEOLMODE, eol, 0);
         }
         on_snippet_write_control(vec_spp);
         *ptr_vec = vec_spp;
@@ -597,13 +569,13 @@ on_snippet_do_modify(HWND hdlg)
             Edit_SetModify(hwnd_edt, FALSE);
             edt_modify = true;
         }
-        if (eu_sci_call(pview, SCI_GETMODIFY, 0, 0))
+        if (on_sci_call(pview, SCI_GETMODIFY, 0, 0))
         {
             char *txt = util_strdup_content(pview, NULL);
             if (txt)
             {
                 _snprintf(vec_spp[dimension].body, LARGER_LEN - 1, "%s", txt);
-                eu_sci_call(pview, SCI_SETSAVEPOINT, 0, 0);
+                on_sci_call(pview, SCI_SETSAVEPOINT, 0, 0);
                 edt_modify = true;
                 free(txt);
             }
@@ -613,7 +585,7 @@ on_snippet_do_modify(HWND hdlg)
             if (add)
             {
                 eu_touch(snippet_file);
-                if (on_parser_vector_new(snippet_file, &vec_spp, dimension, (int)eu_sci_call(pview, SCI_GETEOLMODE, 0, 0)))
+                if (on_parser_vector_new(snippet_file, &vec_spp, dimension, (int)on_sci_call(pview, SCI_GETEOLMODE, 0, 0)))
                 {
                     _InterlockedExchange(&snippet_new, 0);
                 }
@@ -669,7 +641,7 @@ on_snippet_proc(HWND hdlg, uint32_t msg, WPARAM wParam, LPARAM lParam)
             if (hwnd_edt && hwnd_cmb && hwnd_lst)
             {
                 SetWindowSubclass(hwnd_edt, on_snippet_edt_proc, SNIPPET_EDT_SUBID, 0);
-                SetWindowSubclass(hwnd_cmb, on_snippet_cmb_proc, SNIPPET_CMB_SUBID, 0);
+                SetWindowSubclass(hwnd_cmb, on_dark_cmb_proc, SNIPPET_CMB_SUBID, 0);
                 SendMessage(hwnd_edt, WM_SETFONT, (WPARAM) on_theme_font_hwnd(), 0);
                 SendMessage(hwnd_cmb, WM_SETFONT, (WPARAM) on_theme_font_hwnd(), 0);
                 SendMessage(hwnd_lst, WM_SETFONT, (WPARAM) on_theme_font_hwnd(), 0);
@@ -854,9 +826,7 @@ on_snippet_proc(HWND hdlg, uint32_t msg, WPARAM wParam, LPARAM lParam)
                 last_index = 0;
                 _InterlockedExchange(&snippet_new, 0);
                 hwnd_snippet = NULL;
-            #ifdef APP_DEBUG
-                printf("hwnd_snippet WM_DESTROY\n");
-            #endif
+                eu_logmsg("Snippet: hwnd_snippet destroy\n");
             }
             break;
         }
@@ -875,10 +845,10 @@ on_snippet_reload(eu_tabpage *pedit)
         // 设置一个页边缩进
         on_sci_set_margin(pedit);
         // 强制启用自动换行
-        eu_sci_call(pedit, SCI_SETWRAPMODE, SC_WRAP_CHAR, 0);
-        eu_sci_call(pedit, SCI_SETEOLMODE, SC_EOL_LF, 0);
+        on_sci_call(pedit, SCI_SETWRAPMODE, SC_WRAP_CHAR, 0);
+        on_sci_call(pedit, SCI_SETEOLMODE, SC_EOL_LF, 0);
         // 启用语法解析与配色方案
-        on_doc_key_scilexer(pedit, "eu_demo");
+        on_doc_init_after_scilexer(pedit, "eu_demo");
         on_doc_default_light(pedit, SCE_DEMO_CARETSTART, 0xFF8000, -1, true);
         on_doc_default_light(pedit, SCE_DEMO_MARKNUMBER, 0x00FF8000, -1, true);
         on_doc_default_light(pedit, SCE_DEMO_MARK0, 0x0000FF, -1, true);
@@ -888,10 +858,9 @@ on_snippet_reload(eu_tabpage *pedit)
 void
 on_snippet_create_dlg(HWND parent)
 {
-    hwnd_snippet = i18n_create_dialog(parent, IDD_SNIPPET_DLG, on_snippet_proc);
-    if (!hwnd_snippet)
+    if (!hwnd_snippet && !(hwnd_snippet = i18n_create_dialog(parent, IDD_SNIPPET_DLG, on_snippet_proc)))
     {
-        eu_logmsg("%s: hwnd_snippet is null\n", __FUNCTION__);
+        eu_logmsg("Snippet: %s, hwnd_snippet is null\n", __FUNCTION__);
     }
 }
 

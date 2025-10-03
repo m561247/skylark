@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-enum
-{
-    FILE_CHANGE_FILE_YES = 1,
-    FILE_CHANGE_FILE_NO,
-    FILE_CHANGE_ALL_YES,
-    FILE_CHANGE_ALL_NO ,
-    FILE_CHANGE_SEC_YES,
-    FILE_CHANGE_SEC_NO
-};
 
 void on_changes_window(HWND hwnd);
 int eu_i18n_msgbox(HWND hwnd, uint16_t contents_id, uint16_t title_id, uint32_t type);

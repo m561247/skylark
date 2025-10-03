@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,6 +108,15 @@ np_plugins_print(const npp_funcs *pfunc, const NPP instance, npprint *platform)
     if (pfunc && pfunc->print && instance)
     {
         pfunc->print(instance, platform);
+    }
+}
+
+void
+np_plugins_draw(const npp_funcs *pfunc, const NPP instance)
+{
+    if (pfunc && pfunc->event && instance)
+    {
+        pfunc->event(instance, (void *)(intptr_t)WM_SIZE);
     }
 }
 

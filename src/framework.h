@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 // Windows 头文件
 #include <windows.h>
 #include <richedit.h>
-#include <Commdlg.h>
+#include <commdlg.h>
 #include <commctrl.h>
 #include <windowsx.h>
 #include <shellapi.h>
@@ -171,5 +171,11 @@
 #include "eu_settings.h"
 #include "eu_hintctl.h"
 #include "eu_xmlist.h"
+#include "eu_pool.h"
+#include "eu_profiles.h"
+#include "eu_navigate.h"
+#include "eu_commands.h"
+#include "eu_columnctl.h"
+#include "eu_openai.h"
 
 #endif  // _EU_FRAMEWORK_H_

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #ifndef _EU_SESSION_H_
 #define _EU_SESSION_H_
 
+#define EU_SESSION_INTERVAL 400
+
 typedef enum _SESSION_STATUS
 {
     SESSION_THEME = 0,
@@ -32,9 +34,10 @@ typedef enum _SESSION_STATUS
 extern "C" {
 #endif
 
-void on_session_do(const HWND hwnd);
-void on_session_thread_wait(void);
-unsigned long on_session_thread_id(void);
+void     on_session_run(const int indent);
+void     on_session_cancel(void);
+bool     on_session_check(void);
+uint32_t on_session_thread_id(void);
 
 #ifdef __cplusplus
 }

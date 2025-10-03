@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,6 @@
 #define DARK_UNHOTCOLOR  "#4E4E4E"
 #define BLUE_UNHOTCOLOR  "#D3D3D3"
 #define WINE_UNHOTCOLOR  "#696969"
-
-#define CHECK_IF(a) if ((a)!= 0) return false
 
 typedef struct _toolbar_data
 {
@@ -178,7 +176,7 @@ on_toolbar_init_params(const HWND hwnd, toolbar_data **pdata, const int resid)
  * id 为 资源id号
  * flags == 0, 自动翻转
  * flags == 1, 设为禁止状态
- * flags == 2, 设为启用状态
+ * flags == 2. 设为启用状态
  **********************************************/
 void
 on_toolbar_setup_button(int id, int flags)
@@ -569,16 +567,18 @@ create_img_list(toolbar_data *pdata, const bool hot)
     return himg;
 }
 
-static bool
+static void
 close_stdout_redirect(FILE *console)
 {
-    /* restore original standard output handle */
-    CHECK_IF(_dup2(fd_stdout, _fileno(stdout)));
-    _close(fd_stdout);
-    _close(fd_pipe[WRITE_FD]);
-    _close(fd_pipe[READ_FD]);
+    if (fd_stdout && _dup2(fd_stdout, _fileno(stdout)) == 0)
+    {   /* restore original standard output handle */
+        _close(fd_stdout);
+        _close(fd_pipe[WRITE_FD]);
+        _close(fd_pipe[READ_FD]);
+        fd_stdout = 0;
+        _flushall();
+    }
     eu_close_console(console);
-    return true;
 }
 
 static bool
@@ -594,12 +594,8 @@ init_stdout_redirect(int size, FILE **pconsole)
         *pconsole = freopen("CONOUT$", "w", stdout);
         ShowWindow (FindWindow(_T("ConsoleWindowClass"), NULL), SW_HIDE);
     }
-    do
+    if ((_pipe(fd_pipe, size, _O_TEXT)) == 0)
     {
-        if ((_pipe(fd_pipe, size, _O_TEXT)) != 0)
-        {
-            break;
-        }
         int fd = _fileno(stdout);
         fd_stdout = _dup(fd);
         fflush(stdout);
@@ -608,7 +604,11 @@ init_stdout_redirect(int size, FILE **pconsole)
             setvbuf(stdout, NULL, _IONBF, 0);
             ret = true;
         }
-    }while(0);
+        else
+        {
+            _dup2(fd_stdout, fd);
+        }
+    }
     if (!ret)
     {
         eu_close_console(*pconsole);
@@ -637,32 +637,44 @@ void
 on_toolbar_no_highlight(void *lp)
 {
     result_vec *pvec = NULL;
-    eu_sci_call((eu_tabpage *)lp, SCI_SETPROPERTY, (sptr_t)result_extra, (sptr_t)&pvec);
+    on_sci_call((const eu_tabpage *)lp, SCI_SETPROPERTY, (sptr_t)result_extra, (sptr_t)&pvec);
 }
 
-void
+int
 on_toolbar_lua_exec(eu_tabpage *pnode)
 {
+    int err = SKYLARK_ERROR;
     char *buffer = NULL;
     FILE *console = NULL;
-    if (pnode && pnode->doc_ptr)
+    char *filename = NULL;
+    if (pnode)
     {
+        if (pnode->cmds_buffer)
+        {
+            buffer = pnode->cmds_buffer;
+            pnode->cmds_buffer = NULL;
+        }
+        else
+        {
+            buffer = util_strdup_content(pnode, NULL);
+            filename = eu_utf16_utf8(pnode->pathfile, NULL);
+        }
         if (!pnode->presult)
         {
             pnode->result_show = on_result_launch(pnode);
         }
-        if (RESULT_SHOW(pnode) && (buffer = util_strdup_content(pnode, NULL)) && init_stdout_redirect(MAX_OUTPUT_BUF, &console))
+        if (RESULT_SHOW(pnode) && buffer != NULL && init_stdout_redirect(MAX_OUTPUT_BUF, &console))
         {
             int read_len = 0;
             char *std_buffer = NULL;
             pnode->presult->pwant = on_toolbar_no_highlight;
             pnode->qrtable_show = false;
-            on_result_reload(pnode->presult);
+            on_result_lexer(pnode->presult);
             eu_window_resize();
             do_lua_setting_path(pnode);
             if ((std_buffer = (char *)calloc(1, MAX_OUTPUT_BUF+1)))
             {
-                if (do_lua_code((const char *)buffer) == 0)
+                if ((err = do_lua_code((const char *)buffer, filename)) == 0)
                 {
                     read_len = get_output_buffer(std_buffer, MAX_OUTPUT_BUF);
                 }
@@ -670,7 +682,6 @@ on_toolbar_lua_exec(eu_tabpage *pnode)
                 {   // 写标准输出设备, 防止_read函数阻塞
                     fprintf(stdout, "Failed to execute Lua script\n");
                 }
-                close_stdout_redirect(console);
                 if (read_len > 0)
                 {
                     char *pstr = util_unix_newline(std_buffer, MAX_OUTPUT_BUF);
@@ -682,10 +693,13 @@ on_toolbar_lua_exec(eu_tabpage *pnode)
                 }
                 free(std_buffer);
             }
-            free(buffer);
             do_lua_setting_path(NULL);
         }
     }
+    close_stdout_redirect(console);
+    eu_safe_free(buffer);
+    eu_safe_free(filename);
+    return err;
 }
 
 static void
@@ -697,20 +711,20 @@ on_toolbar_create_file(const HWND htab, const int *pv, const int size, wchar_t *
     {
         wchar_t *pname = NULL;
         p = on_tabpage_get_ptr(htab, pv[i]);
-        if (p && p->doc_ptr && (pname = (wchar_t *)calloc(sizeof(wchar_t), MAX_PATH)))
+        if (p && (pname = (wchar_t *)calloc(sizeof(wchar_t), MAX_PATH)))
         {
             HANDLE pfile = NULL;
             if ((pfile = util_mk_temp(pname, on_doc_get_ext(p))) != INVALID_HANDLE_VALUE)
             {
-                char *pbuffer = NULL;
-                if ((pbuffer = util_strdup_content(p, &buf_len)) != NULL)
+                char *pbuffer = TAB_HAS_TXT(p) ? util_strdup_content(p, &buf_len) : (char *)hexview_strdup_data(p, &buf_len);
+                if (pbuffer != NULL && ULONG_MAX > (unsigned long)buf_len)
                 {
                     uint32_t written;
                     WriteFile(pfile, pbuffer, (unsigned long)buf_len, &written, NULL);
                     cvector_push_back(*plist, pname);
-                    free(pbuffer);
                 }
                 CloseHandle(pfile);
+                eu_safe_free(pbuffer);
             }
         }
     }
@@ -739,7 +753,7 @@ do_extra_actions(const eu_tabpage *p)
 {
     wchar_t *abs_path = NULL;
     cvector_vector_type(wchar_t *) vec_files = NULL;
-    const int type = p && p->doc_ptr ? (const int)p->doc_ptr->doc_type : -1;
+    const int type = (const int)(TAB_HAS_BIN(p) ? on_doc_count() + 1 : (p && p->doc_ptr ? (const int)p->doc_ptr->doc_type : -1));
     char *pactions = type >= 0 ? eu_get_config()->m_actions[type] : NULL;
     if (STR_IS_NUL(pactions) && !on_toolbar_mk_temp(on_tabpage_hwnd(p), &vec_files))
     {
@@ -813,9 +827,9 @@ do_extra_actions(const eu_tabpage *p)
 void
 on_toolbar_execute_script(eu_tabpage *p)
 {
-    if (p && !TAB_HEX_MODE(p) && p->doc_ptr)
+    if (p && (p->doc_ptr || TAB_HAS_BIN(p)))
     {
-        const int type = (const int)p->doc_ptr->doc_type;
+        const int type = (const int)(TAB_HAS_BIN(p) ? on_doc_count() + 1 : p->doc_ptr->doc_type);
         if (strlen(eu_get_config()->m_actions[type]) > 1)
         {
             util_update_env(p);
@@ -1034,8 +1048,8 @@ on_toolbar_update_button(eu_tabpage *pnode)
         on_toolbar_setup_button(IDM_SEARCH_FIND, !pnode->pmod ? 2 : 1);
         on_toolbar_setup_button(IDM_SEARCH_FINDPREV, !pnode->pmod ? 2 : 1);
         on_toolbar_setup_button(IDM_SEARCH_FINDNEXT, !pnode->pmod ? 2 : 1);
-        on_toolbar_setup_button(IDM_EDIT_UNDO, !pnode->pmod && eu_sci_call(pnode, SCI_CANUNDO, 0, 0) ? 2 : 1);
-        on_toolbar_setup_button(IDM_EDIT_REDO, !pnode->pmod && eu_sci_call(pnode, SCI_CANREDO, 0, 0) ? 2 : 1);
+        on_toolbar_setup_button(IDM_EDIT_UNDO, !pnode->pmod && on_sci_call(pnode, SCI_CANUNDO, 0, 0) ? 2 : 1);
+        on_toolbar_setup_button(IDM_EDIT_REDO, !pnode->pmod && on_sci_call(pnode, SCI_CANREDO, 0, 0) ? 2 : 1);
         on_toolbar_setup_button(IDM_SEARCH_TOGGLE_BOOKMARK, !pnode->pmod && !TAB_HEX_MODE(pnode) ? 2 : 1);
         on_toolbar_setup_button(IDM_SEARCH_GOTO_PREV_BOOKMARK, !pnode->pmod && !TAB_HEX_MODE(pnode) ? 2 : 1);
         on_toolbar_setup_button(IDM_SEARCH_GOTO_NEXT_BOOKMARK, !pnode->pmod && !TAB_HEX_MODE(pnode) ? 2 : 1);
@@ -1046,8 +1060,15 @@ on_toolbar_update_button(eu_tabpage *pnode)
         on_toolbar_setup_button(IDM_VIEW_ZOOMIN, 2);
         on_toolbar_setup_button(IDM_VIEW_ZOOMOUT, 2);
         on_toolbar_setup_button(IDM_SCRIPT_EXEC, (!TAB_HEX_MODE(pnode) && pnode->doc_ptr) ? 2 : 1);
-        on_dark_enable() ? InvalidateRect(on_toolbar_hwnd(), NULL, false) : (void)0;
+        // dark theme下需要重新绘制
+        on_toolbar_redraw(eu_hwnd_self());
     }
+}
+
+void
+on_toolbar_redraw(HWND hwnd)
+{
+    UpdateWindowEx(on_toolbar_hwnd());
 }
 
 void
@@ -1100,8 +1121,7 @@ on_toolbar_create_dlg(HWND parent)
     do
     {
         int i = 0, j = 0;
-        const int style = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | TBSTYLE_TOOLTIPS |
-                          TBSTYLE_FLAT | TBSTYLE_LIST | CCS_NODIVIDER | CCS_NOPARENTALIGN;
+        int style = WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN|WS_CLIPSIBLINGS|TBSTYLE_TOOLTIPS|TBSTYLE_FLAT|CCS_TOP|CCS_NODIVIDER;
         /*********************************************************************
          * iBitmap(0), 第i个位图
          * idCommand(0), WM_COMMAND消息响应的ID
@@ -1141,7 +1161,7 @@ on_toolbar_create_dlg(HWND parent)
                 ptb[i].iBitmap = j;
                 ptb[i].idCommand = p->icmd;
                 ptb[i].fsState = TBSTATE_ENABLED;
-                ptb[i].fsStyle = BTNS_BUTTON;
+                ptb[i].fsStyle = TBSTYLE_BUTTON;
                 if (!LoadString(g_skylark_lang, p->imsg, str[j], BUFFSIZE))
                 {
                     *str[j] = 0;
@@ -1154,13 +1174,17 @@ on_toolbar_create_dlg(HWND parent)
                 ptb[i].iBitmap = 0;
                 ptb[i].idCommand = 0;
                 ptb[i].fsState = TBSTATE_ENABLED;
-                ptb[i].fsStyle = BTNS_SEP;
+                ptb[i].fsStyle = TBSTYLE_SEP;
             }
+        }
+        if (on_dark_enable())
+        {
+            style |= TBSTYLE_CUSTOMERASE;
         }
         htool = CreateWindowEx(WS_EX_PALETTEWINDOW,
                                TOOLBARCLASSNAME,
                                _T(""),
-                               on_dark_enable() ? style | TBSTYLE_CUSTOMERASE : style,
+                               style,
                                0,
                                0,
                                0,
@@ -1185,7 +1209,7 @@ on_toolbar_create_dlg(HWND parent)
         SendMessage(htool, TB_ADDBUTTONS, (WPARAM) tb_size, (LPARAM)ptb);
         SendMessage(htool, TB_SETIMAGELIST, (WPARAM) 0, (LPARAM) img_list1);
         SendMessage(htool, TB_SETDISABLEDIMAGELIST, (WPARAM) 0, (LPARAM) img_list2);
-        SendMessage(htool, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_MIXEDBUTTONS);
+        SendMessage(htool, TB_SETMAXTEXTROWS, 0, 0);
         on_dark_tips_theme(htool, TB_GETTOOLTIPS);
     } while(0);
     free(str);

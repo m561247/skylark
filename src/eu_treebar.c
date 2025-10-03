@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -243,7 +243,7 @@ on_filetree_file_rename(TVITEM *ptvi)
     {
         if (!old || !old->pathname)
         {
-            eu_logmsg("%s: exist null pointer\n", __FUNCTION__);
+            eu_logmsg("Filebar: %s, exist null pointer\n", __FUNCTION__);
             ret = EUE_POINT_NULL;
             break;
         }
@@ -256,7 +256,7 @@ on_filetree_file_rename(TVITEM *ptvi)
                 _sntprintf(pname, len, _T("%s/%s"), old->pathname, ptvi->pszText);
                 if (!MoveFile(old->filepath, pname))
                 {
-                    eu_logmsg("%s: MoveFile failed, cause:%lu\n", __FUNCTION__, GetLastError());
+                    eu_logmsg("Filebar: %s, MoveFile failed, cause:%lu\n", __FUNCTION__, GetLastError());
                     ret = EUE_MOVE_FILE_ERR;
                 }
                 else
@@ -295,7 +295,7 @@ on_filetree_file_rename(TVITEM *ptvi)
             }
             if (!p)
             {
-                eu_logmsg("%s: maybe path error\n", __FUNCTION__);
+                eu_logmsg("Filebar: %s, maybe path error\n", __FUNCTION__);
                 ret = EUE_FILE_ATTR_ERR;
                 break;
             }
@@ -313,7 +313,7 @@ on_filetree_file_rename(TVITEM *ptvi)
             eu_curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
             if (eu_curl_easy_perform(curl) != CURLE_OK)
             {
-                eu_logmsg("%s: rename [%s] to [%s] failed\n", __FUNCTION__, filename, newname);
+                eu_logmsg("Filebar: %s, rename [%s] to [%s] failed\n", __FUNCTION__, filename, newname);
                 ret = EUE_CURL_NETWORK_ERR;
                 break;
             }
@@ -397,7 +397,7 @@ on_filetree_file_delete(void)
             }
             if (!m_del)
             {
-                eu_logmsg("%s: delete node failed, cause:%lu\n", __FUNCTION__, GetLastError());
+                eu_logmsg("Filebar: %s, delete node failed, cause:%lu\n", __FUNCTION__, GetLastError());
                 ret = EUE_DELETE_FILE_ERR;
             }
             else
@@ -434,7 +434,7 @@ on_filetree_file_delete(void)
             }
             if (!p)
             {
-                eu_logmsg("%s: maybe path error\n", __FUNCTION__);
+                eu_logmsg("Filebar: %s, maybe path error\n", __FUNCTION__);
                 ret = EUE_FILE_ATTR_ERR;
                 break;
             }
@@ -470,7 +470,7 @@ on_filetree_file_delete(void)
             eu_curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
             if ((eu_curl_easy_perform(curl)) != CURLE_OK)
             {
-                eu_logmsg("%s: deletel file failed\n", __FUNCTION__);
+                eu_logmsg("Filebar: %s, deletel file failed\n", __FUNCTION__);
                 ret = EUE_CURL_NETWORK_ERR;
             }
             else
@@ -568,7 +568,7 @@ on_filetree_new_directory(void)
             }
             if (!p)
             {
-                eu_logmsg("%s: maybe path error\n", __FUNCTION__);
+                eu_logmsg("Filebar: %s, maybe path error\n", __FUNCTION__);
                 ret = EUE_FILE_ATTR_ERR;
                 break;
             }
@@ -1145,9 +1145,7 @@ on_filetree_node_dbclick(void)
     HTREEITEM hti;
     int err = SKYLARK_OK;
     tree_data *tvd = NULL;
-    file_backup bak = {0};
-    bak.focus = 1;
-    bak.tab_id = TabCtrl_GetItemCount(HMAIN_GET);
+    file_backup bak = {-1, -1, 0, -1, 1};
     if (!(hti = on_treebar_get_path(&tvd)) || !tvd || !tvd->filepath)
     {
         return EUE_POINT_NULL;
@@ -1238,9 +1236,9 @@ on_treebar_insert_edit(const TCHAR *ext, const char *str)
     if (pnode && STR_NOT_NUL(ext) && STR_NOT_NUL(str))
     {
         sptr_t cur_pos = -1;
-        if ((cur_pos = eu_sci_call(pnode, SCI_GETCURRENTPOS, 0, 0)) < 0)
+        if ((cur_pos = on_sci_call(pnode, SCI_GETCURRENTPOS, 0, 0)) < 0)
         {
-            cur_pos = eu_sci_call(pnode, SCI_GETANCHOR, 0, 0);
+            cur_pos = on_sci_call(pnode, SCI_GETANCHOR, 0, 0);
         }
         if (cur_pos >= 0)
         {
@@ -1250,8 +1248,8 @@ on_treebar_insert_edit(const TCHAR *ext, const char *str)
             {
                 char *u8_ext = eu_utf16_utf8(ext, NULL);
                 _snprintf(text, len, "data:image/%s;base64,%s", STR_NOT_NUL(u8_ext) ? u8_ext : "jpeg", str);
-                eu_sci_call(pnode, SCI_INSERTTEXT, cur_pos, (sptr_t)text);
-                eu_sci_call(pnode, SCI_GOTOPOS, cur_pos, 0);
+                on_sci_call(pnode, SCI_INSERTTEXT, cur_pos, (sptr_t)text);
+                on_sci_call(pnode, SCI_GOTOPOS, cur_pos, 0);
                 free(text);
                 eu_safe_free(u8_ext);
             }
@@ -1848,7 +1846,7 @@ treebar_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             g_treebar = NULL;
         #if APP_DEBUG
-            printf("g_treebar WM_DESTROY\n");
+            printf("Filebar: windows destroy\n");
         #endif
             break;
         }
@@ -1880,13 +1878,13 @@ on_treebar_create_box(HWND hwnd)
     }
     if (TabCtrl_InsertItem(g_treebar, 0, &tci) == -1)
     {
-        eu_logmsg("%s: TabCtrl_InsertItem failed\n", __FUNCTION__);
+        eu_logmsg("Filebar: %s, TabCtrl_InsertItem failed\n", __FUNCTION__);
         DestroyWindow(g_treebar);
         return EUE_INSERT_TAB_FAIL;
     }
     if (!(treebar_wnd = (WNDPROC) SetWindowLongPtr(g_treebar, GWLP_WNDPROC, (LONG_PTR) treebar_proc)))
     {
-        eu_logmsg("%s: SetWindowLongPtr(g_filetree) failed\n", __FUNCTION__);
+        eu_logmsg("Filebar: %s, SetWindowLongPtr(g_filetree) failed\n", __FUNCTION__);
         DestroyWindow(g_treebar);
         return EUE_POINT_NULL;
     }
@@ -1930,7 +1928,6 @@ on_treebar_create_dlg(HWND hwnd)
         {
             break;
         }
-        on_filetree_load_drives(g_filetree);
         if (!(filetree_wnd = (WNDPROC) SetWindowLongPtr(g_filetree, GWLP_WNDPROC, (LONG_PTR) filetree_proc)))
         {
             err = EUE_POINT_NULL;
@@ -1946,6 +1943,9 @@ on_treebar_create_dlg(HWND hwnd)
             err = EUE_POINT_NULL;
             break;
         }
+        CloseHandle((HANDLE) _beginthreadex(NULL, 0, on_favorite_up_config, NULL, 0, NULL));
+        CloseHandle((HANDLE) _beginthreadex(NULL, 0, on_remote_load_config, NULL, 0, NULL));
+        on_filetree_load_drives(g_filetree);
         on_theme_update_font(filetree_id);
         on_treebar_update_theme();
     }while(0);
@@ -2121,7 +2121,7 @@ on_treebar_locate_remote(const TCHAR *pathname)
             MultiByteToWideChar(CP_UTF8, 0, tvd->server->servername, -1, servername, 100);
             if (_tcsicmp(tvd->filename, servername) == 0)
             {
-                eu_logmsg("%s: tvd->filename = servername = %s\n", __FUNCTION__, tvd->server->servername);
+                eu_logmsg("Filebar: %s, tvd->filename = servername = %s\n", __FUNCTION__, tvd->server->servername);
                 break;
             }
         }
@@ -2218,7 +2218,7 @@ on_treebar_locate_path(const TCHAR *pathname)
                 if (on_filetree_append_file_child(g_filetree, tvd))
                 {
                     free(m_dup);
-                    eu_logmsg("%s: on_filetree_append_file_child failed\n", __FUNCTION__);
+                    eu_logmsg("Filebar: %s, on_filetree_append_file_child failed\n", __FUNCTION__);
                     return EUE_UNKOWN_ERR;
                 }
             }

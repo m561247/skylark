@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,11 +46,11 @@ eu_init_logs(const bool turn)
 void __cdecl
 eu_logmsg(const char *format, ...)
 {
-    va_list args = NULL;
-    char buffer[MAX_BUFFER + 1] = {0};
     if (eu_get_config() && eu_get_config()->m_logging && logfile_path[0])
     {
         FILE *pfile = NULL;
+        va_list args = NULL;
+        char buffer[MAX_BUFFER + 1] = {0};
         va_start(args, format);
         int len = vsnprintf(buffer, MAX_BUFFER, format, args);
         if (len > 0 && len < MAX_BUFFER)
@@ -62,10 +62,10 @@ eu_logmsg(const char *format, ...)
                 fclose(pfile);
             }
         }
-    }
-    if (args)
-    {
-        va_end(args);
+        if (args)
+        {
+            va_end(args);
+        }
     }
 }
 #endif

@@ -1,6 +1,6 @@
 /******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ on_table_update_theme(eu_tabpage *pnode)
         HWND hdr = NULL;
         SendMessage(pnode->hwnd_qrtable, WM_SETFONT, (WPARAM) on_theme_font_hwnd(), 0);
         SendMessage(pnode->hwnd_qrtable, LVM_SETTEXTCOLOR, 0, eu_get_theme()->item.text.color);
+        SendMessage(pnode->hwnd_qrtable, LVM_SETOUTLINECOLOR, 0, eu_get_theme()->item.text.color);
         SendMessage(pnode->hwnd_qrtable, LVM_SETBKCOLOR, 0, eu_get_theme()->item.text.bgcolor);
         SendMessage(pnode->hwnd_qrtable, LVM_SETTEXTBKCOLOR, 0, eu_get_theme()->item.text.bgcolor);
         if ((hdr = ListView_GetHeader(pnode->hwnd_qrtable)))
@@ -56,6 +57,10 @@ on_table_listview_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR sub_i
 {
     switch (msg)
     {
+        case WM_ERASEBKGND:
+        {
+            return 1;
+        }
         case WM_THEMECHANGED:
         {
             const bool dark = on_dark_enable();
@@ -70,6 +75,7 @@ on_table_listview_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR sub_i
             {
                 on_dark_set_theme(hdr, dark ? L"ItemsView" : NULL, NULL);
             }
+            UpdateWindowEx(hwnd);
             break;
         }
         case WM_SIZE:
@@ -230,7 +236,7 @@ on_table_create_dlg(eu_tabpage *pnode)
         const HWND h = eu_hwnd_self();
         const HWND htab = on_tabpage_hwnd(pnode);
         const uint32_t style = WS_CHILD | WS_CLIPSIBLINGS | LVS_REPORT;
-        const uint32_t stylex = LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT;
+        const uint32_t stylex = LVS_EX_DOUBLEBUFFER | LVS_EX_FLATSB | LVS_EX_HEADERINALLVIEWS | LVS_EX_FULLROWSELECT;
         if (pnode->hwnd_qrtable)
         {
             DestroyWindow(pnode->hwnd_qrtable);
@@ -883,7 +889,7 @@ on_table_sql_header(eu_tabpage *pnode)
             return false;
         }
     }
-    file_line_count = eu_sci_call(pnode, SCI_GETLINECOUNT, 0, 0);
+    file_line_count = on_sci_call(pnode, SCI_GETLINECOUNT, 0, 0);
     for (file_line = 0; file_line <= file_line_count; file_line++)
     {
         char line_buf[FILESIZE+1] = {0};
@@ -1023,16 +1029,16 @@ on_table_sql_query(eu_tabpage *pnode, const char *pq, bool vcontrol, bool clear)
     unsigned int *afield_width = NULL;
     TCHAR utf_str[MAX_BUFFER+1] = {0};
     EU_VERIFY(pnode != NULL);
-    int char_width = (int)eu_sci_call(pnode, SCI_TEXTWIDTH, STYLE_DEFAULT, (sptr_t) "X");
-    eu_sci_call(pnode->presult, SCI_SETREADONLY, 0, 0);
-    eu_sci_call(pnode->presult, SCI_SETKEYWORDS, 0, (sptr_t)"|");
+    int char_width = (int)on_sci_call(pnode, SCI_TEXTWIDTH, STYLE_DEFAULT, (sptr_t) "X");
+    on_sci_call(pnode->presult, SCI_SETREADONLY, 0, 0);
+    on_sci_call(pnode->presult, SCI_SETKEYWORDS, 0, (sptr_t)"|");
     if (clear)
     {
-        eu_sci_call(pnode->presult, SCI_CLEARALL, 0, 0);
+        on_sci_call(pnode->presult, SCI_CLEARALL, 0, 0);
     }
     else
     {
-        eu_sci_call(pnode->presult, SCI_ADDTEXT, 1, (LPARAM)"\n");
+        on_sci_call(pnode->presult, SCI_ADDTEXT, 1, (LPARAM)"\n");
     }
     if (!on_table_sql_header(pnode))
     {
@@ -1046,8 +1052,8 @@ on_table_sql_query(eu_tabpage *pnode, const char *pq, bool vcontrol, bool clear)
     }
     if (!pq)
     {
-        sel_start = (int) eu_sci_call(pnode, SCI_GETSELECTIONSTART, 0, 0);
-        sel_end = (int) eu_sci_call(pnode, SCI_GETSELECTIONEND, 0, 0);
+        sel_start = (int) on_sci_call(pnode, SCI_GETSELECTIONSTART, 0, 0);
+        sel_end = (int) on_sci_call(pnode, SCI_GETSELECTIONEND, 0, 0);
         sel_len = sel_end - sel_start;
         if (sel_len <= 0)
         {
@@ -1518,8 +1524,8 @@ on_table_sql_query(eu_tabpage *pnode, const char *pq, bool vcontrol, bool clear)
     }
 table_clean:
     on_table_fix_columns(pnode->hwnd_qrtable, afield_width);
-    eu_sci_call(pnode->presult, SCI_SETREADONLY, 1, 0);
-    eu_sci_call(pnode->presult, SCI_GOTOLINE, 1, 0);
+    on_sci_call(pnode->presult, SCI_SETREADONLY, 1, 0);
+    on_sci_call(pnode->presult, SCI_GOTOLINE, 1, 0);
     eu_safe_free(sel_sql);
     eu_safe_free(afield_width);
     return nret;

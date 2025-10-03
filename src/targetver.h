@@ -36,15 +36,15 @@
                         + __EU_INFO_VERSION_MINOR * 100 \
                         + __EU_INFO_VERSION_PATCHLEVEL)
 
-#if 1
-#define __LIFE_CYCLE TEXT("-DEV")
+#if !__EU_INFO_VERSION_PATCHLEVEL
+#define __LIFE_CYCLE TEXT("-GA")
 #else
 #define __LIFE_CYCLE
 #endif
 
 #define __EU_INFO_RELEASE_VERSION MAKE_VERSION_NUM(__EU_INFO_VERSION,__EU_INFO_VERSION_MINOR,__EU_INFO_VERSION_PATCHLEVEL,".")
 
-#define EU_DESCRIPTION TEXT("Copyright © 2020-2023, Skylark project authors. All rights reserved. \r\n\r\n") \
+#define EU_DESCRIPTION TEXT("Copyright © 2020-2025, Skylark project authors. All rights reserved. \r\n\r\n") \
                        TEXT("Note that the GPL places important restrictions on 'derived works', \r\n") \
                        TEXT("yet it does not provide a detailed definition of that term. ") \
                        TEXT("To avoid misunderstandings, we consider an application to constitute a 'derivative work' for ") \
@@ -198,9 +198,10 @@
 #define IDM_OTHER_2      10063
 #define IDM_OTHER_3      10064
 #define IDM_OTHER_ANSI   10065
-#define IDM_OTHER_BIN    10066
-#define IDM_OTHER_PLUGIN 10067
-#define IDM_UNKNOWN      10068
+#define IDM_OTHER_ICONV  10066
+#define IDM_OTHER_BIN    10067
+#define IDM_OTHER_PLUGIN 10068
+#define IDM_UNKNOWN      10069
 
 #define IDM_LBREAK_1     10080
 #define IDM_LBREAK_2     10081
@@ -274,7 +275,7 @@
 #define IDS_STATUS_LD  10178
 #define IDS_STATUS_HXY 10179
 #define IDS_STATUS_HLC 10279
-
+// toolbar message id
 #define IDS_TOOLBAR_0    10180
 #define IDS_TOOLBAR_1    10181
 #define IDS_TOOLBAR_2    10182
@@ -304,6 +305,17 @@
 #define IDS_TOOLBAR_26   10206
 #define IDS_TOOLBAR_27   10207
 #define IDS_TOOLBAR_28   10208
+#define IDS_TOOLBAR_29   10209
+#define IDS_TOOLBAR_30   10210
+#define IDS_TOOLBAR_31   10211
+#define IDS_TOOLBAR_32   10212
+#define IDS_TOOLBAR_33   10213
+#define IDS_TOOLBAR_34   10214
+#define IDS_TOOLBAR_35   10215
+#define IDS_TOOLBAR_36   10216
+#define IDS_TOOLBAR_37   10217
+#define IDS_TOOLBAR_38   10218
+#define IDS_TOOLBAR_39   10219
 // language type
 #define IDM_TYPES_0      10300
 #define IDM_TYPES_ZERO   10409
@@ -556,6 +568,7 @@
 #define IDM_EDIT_BOOKMARK_LINES_REMOVE       30213
 #define IDM_EDIT_BOOKMARK_LINES_RESERVE      30214
 #define IDM_EDIT_GOLINE_GROUP                30215
+#define IDM_EDIT_UNDO_SELECTION              30216
 
 #define IDM_VIEW_INDENTGUIDES_VISIABLE       30300
 #define IDM_SEARCH_GOTO_PREV_BOOKMARK_INALL  30301
@@ -635,6 +648,13 @@
 #define IDM_EDIT_COPY_INCREMENTAL            30457
 #define IDM_EDIT_COPY_RTF                    30458
 #define IDM_VIEW_TABBAR_SPLIT                30459
+
+#define IDM_VIEW_TABS_NAME_ASCEND            30460
+#define IDM_VIEW_TABS_NAME_ADESCEND          30461
+#define IDM_VIEW_TABS_TYPE_ASCEND            30462
+#define IDM_VIEW_TABS_TYPE_ADESCEND          30463
+#define IDM_VIEW_TABS_SIZE_ASCEND            30464
+#define IDM_VIEW_TABS_SIZE_ADESCEND          30465
 
 #define IDM_VIEW_WHITESPACE_VISIABLE      30500
 #define IDM_VIEW_LINENUMBER_VISIABLE      30501
@@ -1045,10 +1065,13 @@
 #define IDM_SET_RENDER_TECH_GDI             42560
 #define IDM_SET_RENDER_TECH_D2D             42561
 #define IDM_SET_RENDER_TECH_D2DRETAIN       42562
-#define IDM_SETTING_FONTQUALITY             42563
-#define IDM_SETTING_RENDER                  42564
+#define IDM_SET_RENDER_TECH_DC              42563
+#define IDM_SET_RENDER_TECH_D2D1_1          42564
+
 #define IDM_SOURCE_SNIPPET_GROUP            42565
 #define IDM_EDIT_SELECT_GROUP               42566
+#define IDM_SETTING_FONTQUALITY_GROUP       42567
+#define IDM_SETTING_RENDER_GROUP            42568
 
 #define IDR_TOOLBAR_POPUPMENU               42600
 #define IDM_VIEW_MENUBAR                    42601
@@ -1122,6 +1145,7 @@
 #define IDM_FILE_SHA1_CLIP                  42853
 #define IDM_FILE_SHA256_CLIP                42854
 #define IDM_TREE_BAR                        42855
+#define IDM_TABPAGE_BAR                     42856
 #define IDM_TABLE_BAR                       42857
 #define IDM_FILE_EXPLORER                   42858
 #define IDM_PIC_CONVERT_BASE64              42859
@@ -1136,8 +1160,9 @@
 #define IDS_USER32_UNFINISHED               42867
 #define IDS_SKYLARK_DONATION                42868
 #define IDM_DONATION                        42869
-#define IDM_TABPAGE_BAR1                    42870
-#define IDM_TABPAGE_BAR2                    42871
+#define IDM_PROGRAM_CPLUS                   42870
+#define IDM_TABPAGE_BAR1                    42871
+#define IDM_TABPAGE_BAR2                    42872
 
 #define IDD_DONATION_BOX                    42880
 #define IDC_DONA_STATIC1                    42881
@@ -1239,6 +1264,7 @@
 #define IDM_EDIT_BACKSLASH_SLASH            44101
 
 #define IDM_SET_LOGGING_ENABLE              44200
+#define IDM_SET_CHANGENOTIFY                44201
 
 #define IDR_FILETREE_FAVORITE_POPUP         44300
 #define IDM_FAVORITE_OPEN                   44301
@@ -1261,6 +1287,7 @@
 #define IDS_UNDO_UNCLOSE_TIPS               44502
 #define IDS_HISTORY_CLEAR_UNDO              44503
 #define IDS_MINMAP_DESC                     44504
+#define IDS_PRIFILES_WARNING                44505
 
 #define IDD_SETTING_DIALOG                  44600
 #define IDC_SETTING_NAME_EDIT               44601
@@ -1299,11 +1326,184 @@
 #define IDM_VIEW_SPLIT_COPY                 44763
 #define IDM_VIEW_OTHER_COPY                 44764
 #define IDM_VIEW_OTHER_MOVE                 44765
-
 // For MessageBox
 #define IDALWAYS                            12
 #define MB_YESNOALWAYS                      0x0007
 #define MSGBOX_IDICON                       0x0440
 #define MSGBOX_IDTEXT                       0xffff
+
+// for libiconv
+#define IDM_ICONV_001                       50000
+#define IDM_ICONV_002                       50001
+#define IDM_ICONV_003                       50002
+#define IDM_ICONV_004                       50003
+#define IDM_ICONV_005                       50004
+#define IDM_ICONV_006                       50005
+#define IDM_ICONV_007                       50006
+#define IDM_ICONV_008                       50007
+#define IDM_ICONV_009                       50008
+#define IDM_ICONV_010                       50009
+#define IDM_ICONV_011                       50010
+#define IDM_ICONV_012                       50011
+#define IDM_ICONV_013                       50012
+#define IDM_ICONV_014                       50013
+#define IDM_ICONV_015                       50014
+#define IDM_ICONV_016                       50015
+#define IDM_ICONV_017                       50016
+#define IDM_ICONV_018                       50017
+#define IDM_ICONV_019                       50018
+#define IDM_ICONV_020                       50019
+#define IDM_ICONV_021                       50020
+#define IDM_ICONV_022                       50021
+#define IDM_ICONV_023                       50022
+#define IDM_ICONV_024                       50023
+#define IDM_ICONV_025                       50024
+#define IDM_ICONV_026                       50025
+#define IDM_ICONV_027                       50026
+#define IDM_ICONV_028                       50027
+#define IDM_ICONV_029                       50028
+#define IDM_ICONV_030                       50029
+#define IDM_ICONV_031                       50030
+#define IDM_ICONV_032                       50031
+#define IDM_ICONV_033                       50032
+#define IDM_ICONV_034                       50033
+#define IDM_ICONV_035                       50034
+#define IDM_ICONV_036                       50035
+#define IDM_ICONV_037                       50036
+#define IDM_ICONV_038                       50037
+#define IDM_ICONV_039                       50038
+#define IDM_ICONV_040                       50039
+#define IDM_ICONV_041                       50040
+#define IDM_ICONV_042                       50041
+#define IDM_ICONV_043                       50042
+#define IDM_ICONV_044                       50043
+#define IDM_ICONV_045                       50044
+#define IDM_ICONV_046                       50045
+#define IDM_ICONV_047                       50046
+#define IDM_ICONV_048                       50047
+#define IDM_ICONV_049                       50048
+#define IDM_ICONV_050                       50049
+#define IDM_ICONV_051                       50050
+#define IDM_ICONV_052                       50051
+#define IDM_ICONV_053                       50052
+#define IDM_ICONV_054                       50053
+#define IDM_ICONV_055                       50054
+#define IDM_ICONV_056                       50055
+#define IDM_ICONV_057                       50056
+#define IDM_ICONV_058                       50057
+#define IDM_ICONV_059                       50058
+#define IDM_ICONV_060                       50059
+#define IDM_ICONV_061                       50060
+#define IDM_ICONV_062                       50061
+#define IDM_ICONV_063                       50062
+#define IDM_ICONV_064                       50063
+#define IDM_ICONV_065                       50064
+#define IDM_ICONV_066                       50065
+#define IDM_ICONV_067                       50066
+#define IDM_ICONV_068                       50067
+#define IDM_ICONV_069                       50068
+#define IDM_ICONV_070                       50069
+#define IDM_ICONV_071                       50070
+#define IDM_ICONV_072                       50071
+#define IDM_ICONV_073                       50072
+#define IDM_ICONV_074                       50073
+#define IDM_ICONV_075                       50074
+#define IDM_ICONV_076                       50075
+#define IDM_ICONV_077                       50076
+#define IDM_ICONV_078                       50077
+#define IDM_ICONV_079                       50078
+#define IDM_ICONV_080                       50079
+#define IDM_ICONV_081                       50080
+#define IDM_ICONV_082                       50081
+#define IDM_ICONV_083                       50082
+#define IDM_ICONV_084                       50083
+#define IDM_ICONV_085                       50084
+#define IDM_ICONV_086                       50085
+#define IDM_ICONV_087                       50086
+#define IDM_ICONV_088                       50087
+#define IDM_ICONV_089                       50088
+#define IDM_ICONV_090                       50089
+#define IDM_ICONV_091                       50090
+#define IDM_ICONV_092                       50091
+#define IDM_ICONV_093                       50092
+#define IDM_ICONV_094                       50093
+#define IDM_ICONV_095                       50094
+#define IDM_ICONV_096                       50095
+#define IDM_ICONV_097                       50096
+#define IDM_ICONV_098                       50097
+#define IDM_ICONV_099                       50098
+#define IDM_ICONV_100                       50099
+#define IDM_ICONV_101                       50100
+#define IDM_ICONV_102                       50101
+#define IDM_ICONV_103                       50102
+#define IDM_ICONV_104                       50103
+#define IDM_ICONV_105                       50104
+#define IDM_ICONV_106                       50105
+#define IDM_ICONV_107                       50106
+#define IDM_ICONV_108                       50107
+#define IDM_ICONV_109                       50108
+#define IDM_ICONV_110                       50109
+#define IDM_ICONV_111                       50110
+#define IDM_ICONV_112                       50111
+#define IDM_ICONV_113                       50112
+#define IDM_ICONV_114                       50113
+#define IDM_ICONV_115                       50114
+#define IDM_ICONV_116                       50115
+#define IDM_ICONV_117                       50116
+#define IDM_ICONV_118                       50117
+#define IDM_ICONV_119                       50118
+#define IDM_ICONV_120                       50119
+#define IDM_ICONV_121                       50120
+#define IDM_ICONV_122                       50121
+#define IDM_ICONV_123                       50122
+#define IDM_ICONV_124                       50123
+#define IDM_ICONV_125                       50124
+#define IDM_ICONV_126                       50125
+#define IDM_ICONV_127                       50126
+#define IDM_ICONV_128                       50127
+#define IDM_ICONV_129                       50128
+#define IDM_ICONV_130                       50129
+#define IDM_ICONV_131                       50130
+#define IDM_ICONV_132                       50131
+#define IDM_ICONV_133                       50132
+
+// for colum  editor
+#define IDD_COLUMNEDIT_DLG                  50200
+#define IDC_COL_INITNUM_EDIT                (IDD_COLUMNEDIT_DLG + 1)
+#define IDC_COL_INCREASENUM_EDIT            (IDD_COLUMNEDIT_DLG + 2)
+#define IDC_COL_DEC_RADIO                   (IDD_COLUMNEDIT_DLG + 3)
+#define IDC_COL_OCT_RADIO                   (IDD_COLUMNEDIT_DLG + 4)
+#define IDC_COL_HEX_RADIO                   (IDD_COLUMNEDIT_DLG + 5)
+#define IDC_COL_BIN_RADIO                   (IDD_COLUMNEDIT_DLG + 6)
+#define IDC_COL_NUM_GRP_STATIC              (IDD_COLUMNEDIT_DLG + 7)
+#define IDC_COL_INITNUM_STATIC              (IDD_COLUMNEDIT_DLG + 8)
+#define IDC_COL_INCRNUM_STATIC              (IDD_COLUMNEDIT_DLG + 9)
+#define IDC_COL_FORMAT_GRP_STATIC           (IDD_COLUMNEDIT_DLG + 10)
+#define IDC_COL_NUM_STATIC                  (IDD_COLUMNEDIT_DLG + 11)
+#define IDC_COL_REPEATNUM_STATIC            (IDD_COLUMNEDIT_DLG + 12)
+#define IDC_COL_REPEATNUM_EDIT              (IDD_COLUMNEDIT_DLG + 13)
+#define IDC_COL_LEADING_STATIC              (IDD_COLUMNEDIT_DLG + 14)
+#define IDC_COL_LEADING_COMBO               (IDD_COLUMNEDIT_DLG + 15)
+#define IDS_COLUMN_FILL_NONE                (IDD_COLUMNEDIT_DLG + 16)
+#define IDS_COLUMN_FILL_ZEROS               (IDD_COLUMNEDIT_DLG + 17)
+#define IDS_COLUMN_FILL_SPACES              (IDD_COLUMNEDIT_DLG + 18)
+#define IDM_EDIT_COLUMN_EXEC                (IDD_COLUMNEDIT_DLG + 20)
+
+#define IDS_WHICH_NONE                      50230
+#define IDS_WHICH_EXIST                     50231
+#define IDS_NOT_SUPPORTED                   50232
+#define IDS_SAVE_HOME                       50233
+#define IDS_CMDS_ERROR                      50234
+#define IDS_OPENAI_KEY_ERR                  50235
+#define IDS_OPENAI_FORMAT_ERR               50236
+#define IDS_OPENAI_AUTH_FAILD               50237
+#define IDS_INSUFFICIENT_BAL                50238
+#define IDS_OPENAI_PARAMETE_ERR             50239
+#define IDS_OPENAI_TMP_ERR                  50240
+#define IDS_OPENAI_SERV_FAILURE             50241
+#define IDS_OPENAI_SERV_BUSY                50242
+#define IDS_OPENAI_SERV_THINK               50243
+#define IDS_OPENAI_SERV_404                 50244
+#define IDS_OPENAI_DATA_ERR                 50245
 
 #endif  // _EU_TARGETVER_H_

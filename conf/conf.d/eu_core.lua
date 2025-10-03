@@ -5,7 +5,7 @@ eu_core.euapi = eu_core.ffi.load(eu_core.ffi.os == "Windows" and "euapi.dll")
 
 eu_core.ffi.cdef[[
 
-typedef struct tagRECT 
+typedef struct tagRECT
 {
     long left;
     long top;
@@ -13,7 +13,7 @@ typedef struct tagRECT
     long bottom;
 }RECT;
 
-typedef struct tagACCEL 
+typedef struct tagACCEL
 {
     unsigned short fVirt;
     unsigned short key;
@@ -28,6 +28,15 @@ typedef struct _print_set
     int zoom;
     RECT rect;
 }print_set;
+
+typedef struct _columnctl_set
+{
+    int initnum;
+    int increase;
+    int repeater;
+    int leading;
+    int format;
+}columnctl_set;
 
 typedef struct _titlebar_set
 {
@@ -83,8 +92,19 @@ typedef struct _upgrade_set
     int  flags;
     int  msg_id;
     uint64_t last_check;
-    char url[1024];
+    char url[260];
 }upgrade_set;
+
+typedef struct _openai_set
+{
+    bool think;
+    bool stream;
+    int  max_tokens;
+    char key[64];
+    char model[64];
+    char base[128];
+    char setting[1024];
+}openai_set;
 
 typedef struct _customize_set
 {
@@ -126,11 +146,8 @@ struct eu_config
 
     uint32_t last_flags;
     uint32_t history_mask;
-    bool ws_visiable;
-    int ws_size;
-    bool newline_visialbe;
     
-    bool m_indentation;
+    bool alignedge;
     int tab_width;
     bool tab2spaces;
     bool light_fold;
@@ -155,19 +172,20 @@ struct eu_config
     
     bool block_fold;
     bool m_tab_tip;
-    bool m_code_hint;
     bool m_tab_split;
     
+    int m_code_hint;
     int m_close_way;
     int m_close_draw;
     int m_new_way;
     int m_tab_active;
     int m_quality;
     int m_render;
-    int m_upfile;
-    int m_up_notify;
-    int m_doc_restrict;
+    int  m_upfile;
+    int  m_up_notify;
+    int  m_doc_restrict;
 
+    bool m_undo_selection;
     bool m_light_str;
     bool m_write_copy;
     bool m_session;
@@ -181,11 +199,14 @@ struct eu_config
     calltip_set eu_calltip;
     complete_set eu_complete;
     print_set eu_print;
+    columnctl_set eu_column;
     titlebar_set eu_titlebar;
     mstab_set eu_tab;
     bool m_hyperlink;
     int m_limit;
     upgrade_set upgrade;
+    openai_set openai;
+    char sep_copy[260];
     char m_path[260];
     char editor[260];
     char m_reserved_0[260];
@@ -242,6 +263,7 @@ struct styletheme
     struct styleclass bracesection;
     struct styleclass nchistory;
     struct styleclass dochistory;
+    struct styleclass whitechar;
 };
 
 struct eu_theme
@@ -368,13 +390,6 @@ typedef struct te_variable
     void *context;
 } te_variable;
 
-double eu_te_eval(const te_expr *n);
-double eu_te_interp(const char *expression, int *error);
-void eu_te_print(const te_expr *n);
-void eu_te_free(te_expr *n);
-te_expr *eu_te_compile(const char *expression, const te_variable *variables, int var_count, int *error);
-void eu_lua_calltip(const char *pstr);
-
 // 获取配置文件指针
 bool eu_config_ptr(struct eu_config *pconfig);
 bool eu_theme_ptr(struct eu_theme *ptheme);
@@ -384,12 +399,85 @@ bool eu_exist_path(const char *path);
 bool eu_xml_pretty(void *ptr, struct opt_format *opt);
 
 // crt 函数
+void free(void *);
+void *malloc(size_t len);
+size_t strlen(const char *);
 char *_fullpath(char *buf, const char *path, size_t maxlen);
+
+// windows api
+int CloseHandle(void *);
+int GetWindowTextW(void *hwnd, wchar_t *str, int count);
+intptr_t SendMessageW(void *hwnd, uint32_t msg, intptr_t wp, intptr_t lp);
+
+// euapi 函数
+double eu_te_eval(const te_expr *n);
+double eu_te_interp(const char *expression, int *error);
+void eu_te_print(const te_expr *n);
+void eu_te_free(te_expr *n);
+te_expr *eu_te_compile(const char *expression, const te_variable *variables, int var_count, int *error);
+void eu_lua_calltip(const char *pstr);
+
+char *eu_utf16_utf8(const wchar_t *utf16, size_t *out_len);
+char *eu_utf16_mbcs(int codepage, const wchar_t *utf16, size_t *out_len);
+wchar_t *eu_mbcs_utf16(int codepage, const char *ansi, size_t *out_len);
+char *eu_mbcs_utf8(int codepage, const char *ansi, size_t *out_len);
+wchar_t *eu_utf8_utf16(const char *utf8, size_t *out_len);
+char *eu_utf8_mbcs(int codepage, const char *utf8, size_t *out_len);
+char *eu_strdup_content(const int index);
+char *eu_strdup_line(const int t, const intptr_t line_number);
+char *eu_strdup_select(const int t);
+char *eu_strdup_content(const int index);
+char *eu_strdup_range(const int t, const intptr_t start, const intptr_t end);
+char *eu_sci_range(const void *p, const intptr_t start, const intptr_t end);
+char *eu_file_path(const int t);
+char *eu_file_name(const int t);
+int eu_file_close(const int t, const int mode);
+int eu_file_open(const wchar_t *path);
+int eu_msgbox(void *w, const wchar_t *txt, const wchar_t *cap, uint32_t type);
+intptr_t eu_file_size(const int t);
+intptr_t eu_end_positon(const int t);
+intptr_t eu_line_start_positon(const int t, const intptr_t line);
+intptr_t eu_line_end_positon(const int t, const intptr_t line);
+/* 保存所有文件 */
+void eu_file_save_all(void);
+/* 编辑器主窗口句柄 */
+void *eu_module_hwnd(void);
+/* 启动其他进程, *o保存了pid */
+void *eu_new_process(const wchar_t *wcmd, const wchar_t *param, const wchar_t *pcd, int flags, uint32_t *o);
+/* 获取void *的值 */
+intptr_t eu_value(void *p);
+/* 是否运行在Linux/Wine */
+bool eu_under_wine(void);
+/* 文件是否在环境变量路径中 */
+bool eu_which(const char *path, char **pout);
+/* 获取系统版本 */
+const uint32_t eu_win10_or_later(void);
+
+int eu_tab_focus_index(void);
+int eu_tab_last_index(void);
+void eu_tab_select(const int index);
+
+int  eu_command_save(const int t);
+void eu_command_talk(const int t, const char *str);
+void eu_command_jump(const int t, const intptr_t line);
+void eu_command_launch(const int t);
+void eu_command_which(const char *str);
+void eu_command_run(const int t, const char *str, const bool fnclose);
+/* 重设文件编码 */
+bool eu_command_reload(const int t, const char *enc);
+bool eu_command_convert(const int t, const char *enc);
+/* 保存文件 */
+bool eu_command_saveas(const int t, const char *path, const int mode);
+bool eu_command_xsave(const int t);
+bool eu_command_search(const int t, const char *key, const uint32_t opt);
+bool eu_command_replace(const int t, const char *key, const char *replace, const intptr_t n1, const intptr_t n2, const uint32_t opt);
+bool eu_command_tabs_hint(const char *str, const bool focus);
 
 // all doctype callbacks
 bool eu_init_calltip_tree(doctype_t *p, const char *key, const char *val);
 bool eu_init_completed_tree(doctype_t *p, const char *val);
-intptr_t eu_sci_call(void *p, int m, intptr_t w, intptr_t l);
+intptr_t eu_sci_call(const int t, const int m, const intptr_t w, const intptr_t l);
+intptr_t eu_sci_cmd(const void *p, const int m, const intptr_t w, const intptr_t l);
 
 /* 默认的 init_before_ptr 回调函数入口 */
 int on_doc_init_list(void *pnode);
@@ -408,7 +496,6 @@ int on_doc_init_after_redis(void *pnode);
 int on_doc_init_after_python(void *pnode);
 int on_doc_init_after_lua(void *pnode);
 int on_doc_init_after_perl(void *pnode);
-int on_doc_init_after_shell(void *pnode);
 int on_doc_init_after_rust(void *pnode);
 int on_doc_init_after_ruby(void *pnode);
 int on_doc_init_after_lisp(void *pnode);
@@ -425,6 +512,8 @@ int on_doc_init_after_cmake(void *pnode);
 int on_doc_init_after_log(void *pnode);
 int on_doc_init_after_nim(void *pnode);
 int on_doc_init_after_shell_sh(void *pnode);
+int on_doc_init_after_shell_batch(void *pnode);
+int on_doc_init_after_shell_power(void *pnode);
 int on_doc_init_after_properties(void *pnode);
 int on_doc_init_after_diff(void *pnode);
 
@@ -490,13 +579,6 @@ void eu_reset_docs_mask(void);
 void eu_reset_accs_mask(void);
 void eu_reset_snip_mask(void);
 void eu_reset_theme_mask(void);
-
-/* 是否运行在Linux/Wine */
-bool eu_under_wine(void);
-/* 文件是否在环境变量路径中 */
-bool eu_which(const char *path);
-/* 获取系统版本 */
-const uint32_t eu_win10_or_later(void);
 
 ]]
 

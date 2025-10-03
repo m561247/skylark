@@ -9,8 +9,10 @@ function eu_accel.loadaccel()
   if (not eu_core.file_exists(acc_file)) then
     local code = {
       "local bit = require(\"bit\")\n",
-      "-- You can change the shortcut keys of the menu here\n",
-      "-- If FVIRTKEY flag is not specified, key is assumed to ASCII character.\n",
+      "--[=[\n",
+      "You can change the shortcut keys of the menu here\n",
+      "If FVIRTKEY flag is not specified, key is assumed to ASCII character.\n",
+      "]=]\n",
       "local accel_t = {-- File menu\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), string.byte(\"N\"), IDM_FILE_NEW},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), string.byte(\"O\"), IDM_FILE_OPEN},\n",
@@ -33,6 +35,7 @@ function eu_accel.loadaccel()
       "                 -- Edit menu\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), string.byte(\"Z\"), IDM_EDIT_UNDO},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), string.byte(\"Y\"), IDM_EDIT_REDO},\n",
+      "                 {0, 0, IDM_EDIT_UNDO_SELECTION},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), string.byte(\"X\"), IDM_EDIT_CUT},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), string.byte(\"C\"), IDM_EDIT_COPY},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), string.byte(\"V\"), IDM_EDIT_PASTE},\n",
@@ -71,6 +74,7 @@ function eu_accel.loadaccel()
       "                 {bit.bor(FVIRTKEY,FCONTROL,FALT), string.byte(\"T\"), IDM_EDIT_SPACE_TAB},\n",
       "                 {bit.bor(FCONTROL,FSHIFT), string.byte(\"/\"), IDM_EDIT_SLASH_BACKSLASH},\n",
       "                 {bit.bor(FCONTROL,FSHIFT), string.byte(\"\\\\\"), IDM_EDIT_BACKSLASH_SLASH},\n",
+      "                 {bit.bor(FVIRTKEY,FALT), string.byte(\"N\"), IDM_EDIT_COLUMN_EXEC},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"F\"), IDM_OPEN_FILE_PATH},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"D\"), IDM_OPEN_CONTAINING_FOLDER},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"G\"), IDM_ONLINE_SEARCH_GOOGLE},\n",
@@ -127,11 +131,12 @@ function eu_accel.loadaccel()
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"2\"), IDM_EDIT_BOOKMARK_LINES_CUT},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"3\"), IDM_EDIT_BOOKMARK_LINES_REMOVE},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"4\"), IDM_EDIT_BOOKMARK_LINES_RESERVE},\n",
-      "                 {bit.bor(FVIRTKEY,FCONTROL), VK_BACK, IDM_SEARCH_NAVIGATE_PREV_THIS},\n",
-      "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), VK_BACK, IDM_SEARCH_NAVIGATE_PREV_INALL},\n",
+      "                 {bit.bor(FCONTROL), string.byte(\"~\"), IDM_SEARCH_NAVIGATE_PREV_THIS},\n",
+      "                 {bit.bor(FCONTROL,FSHIFT), string.byte(\"~\"), IDM_SEARCH_NAVIGATE_PREV_INALL},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"A\"), IDM_SEARCH_SELECT_MATCHING_ALL},\n",
       "                 -- View menu\n",
       "                 {0, 0, IDM_VIEW_FILETREE},\n",
+      "                 {0, 0, IDM_VIEW_DOCUMENT_MAP},\n",
       "                 {0, 0, IDM_VIEW_SYMTREE},\n",
       "                 {bit.bor(FVIRTKEY), VK_F11, IDM_VIEW_FULLSCREEN},\n",
       "                 {bit.bor(FVIRTKEY, FALT), VK_F11, IDM_VIEW_MENUBAR},\n",
@@ -149,12 +154,12 @@ function eu_accel.loadaccel()
       "                 {0, 0, IDM_TABCLOSE_FOLLOW},\n",
       "                 {0, 0, IDM_TABCLOSE_ALWAYS},\n",
       "                 {0, 0, IDM_TABCLOSE_NONE},\n",
-      "                 {bit.bor(FVIRTKEY,FCONTROL,FALT), string.byte(\"P\"), IDM_VIEW_VERTICAL_SPLIT},\n",
-      "                 {0, 0, IDM_VIEW_SPLIT_COPY},\n",
-      "                 {bit.bor(FVIRTKEY,FCONTROL,FALT), string.byte(\"V\"), IDM_VIEW_OTHER_COPY},\n",
-      "                 {bit.bor(FVIRTKEY,FCONTROL,FALT), string.byte(\"M\"), IDM_VIEW_OTHER_MOVE},\n",
-      "                 {0, 0, IDM_VIEW_VERTICAL_SYNC},\n",
-      "                 {0, 0, IDM_VIEW_HORIZONTAL_SYNC},\n",
+      "                 {bit.bor(FVIRTKEY, FALT), string.byte(\"H\"), IDM_VIEW_TABS_NAME_ASCEND},\n",
+      "                 {0, 0, IDM_VIEW_TABS_NAME_ADESCEND},\n",
+      "                 {0, 0, IDM_VIEW_TABS_TYPE_ASCEND},\n",
+      "                 {0, 0, IDM_VIEW_TABS_TYPE_ADESCEND},\n",
+      "                 {0, 0, IDM_VIEW_TABS_SIZE_ASCEND},\n",
+      "                 {0, 0, IDM_VIEW_TABS_SIZE_ADESCEND},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL), VK_TAB, IDM_VIEW_SWITCH_TAB},\n",
       "                 {0, 0, IDM_VIEW_SCROLLCURSOR},\n",
       "                 {0, 0, IDM_VIEW_TABBAR_SPLIT},\n",
@@ -200,6 +205,8 @@ function eu_accel.loadaccel()
       "                 -- Settings menu\n",
       "                 {0, 0, IDM_VIEW_MODIFY_STYLETHEME},\n",
       "                 {0, 0, IDM_SET_RESET_CONFIG},\n",
+      "                 {0, 0, IDM_SET_CHANGENOTIFY},\n",
+      "                 {0, 0, IDM_SET_LOGGING_ENABLE},\n",
       "                 {0, 0, IDM_FILE_SAVE_NOTIFY},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"V\"), IDM_SET_LUAJIT_EXECUTE},\n",
       "                 {bit.bor(FVIRTKEY,FCONTROL,FSHIFT), string.byte(\"Z\"), IDM_SET_LUAJIT_EXECUTE + 1},\n",
@@ -222,7 +229,7 @@ function eu_accel.loadaccel()
   local m_len = tonumber(#my_code)
   if (m_len ~= nil) then
     -- print("m_len = " .. m_len)
-    if (m_len < 190) then
+    if (m_len < 195) then
       eu_core.euapi.eu_reset_accs_mask()
     end
     local m_accel = eu_core.ffi.new("ACCEL[?]", m_len, {})

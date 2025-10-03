@@ -1,6 +1,6 @@
 /*******************************************************************************
  * This file is part of Skylark project
- * Copyright ©2023 Hua andy <hua.andy@gmail.com>
+ * Copyright ©2025 Hua andy <hua.andy@gmail.com>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,8 @@ int  on_statusbar_window_diff(void);
 int  on_statusbar_create_dlg(HWND hwnd);
 int  on_statusbar_height(void);
 int  on_statusbar_btn_rw(eu_tabpage *pnode, bool m_auto);
-void on_statusbar_size(const RECT *prc, const bool fn_btn);
+int  on_statusbar_convert_coding(eu_tabpage *pnode, int encoding);
+void on_statusbar_size(const RECT *prc, eu_tabpage *pnode);
 void on_statusbar_update(eu_tabpage *pnode);
 void on_statusbar_destroy(void);
 void on_statusbar_adjust_box(void);
